@@ -68,17 +68,8 @@ Hasil build ada di folder dist/. Deploy ke Google Cloud Run via AI Studio dengan
 🏆 Submission Info
 Aplikasi ini dibuat untuk #JuaraVibeCoding — program Google untuk developer Indonesia membangun solusi dengan AI.
 
-Live URL: [isi dengan link Cloud Run lo]
-
-Video Demo: [isi dengan link LinkedIn lo]
+Live URL: soon
+Video Demo: soon
 
 📄 License
-MIT © [Nama Lo]
-
-text
-
----
-
-Tinggal ganti `[username]`, `[repo-name]`, `[Nama Lo]`, dan link Cloud Run + LinkedIn lo nanti. Dengan README kayak gini, juri bakal liat lo serius dan profesional, Bro!
-
-Mau gue bantuin apa lagi? Gas! 🔥
+MIT © Zidane Solahudin
