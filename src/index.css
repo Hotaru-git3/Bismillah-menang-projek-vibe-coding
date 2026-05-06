@@ -1,0 +1,43 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@400;500;600&family=Caveat:wght@400..700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-rk-brown: #3E2723;
+  --color-rk-brown-light: #4E342E;
+  --color-rk-cream: #FFF8F0;
+  --color-rk-cream-dark: #F5E6D3;
+  --color-rk-gold: #C8A45C;
+  --color-rk-gold-dark: #D4AF37;
+  --color-rk-amber: #E8B86D;
+  --color-rk-red: #8B3A3A;
+
+  --font-serif: "Playfair Display", ui-serif, Georgia, serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-hand: "Caveat", "Comic Sans MS", cursive;
+}
+
+body {
+  background-color: var(--color-rk-cream);
+  color: var(--color-rk-brown);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6, .font-serif {
+  font-family: var(--font-serif);
+}
+
+/* Base interactive transitions */
+button, a {
+  transition: all 0.2s ease;
+}
+button:active {
+  transform: scale(0.97);
+  transition-duration: 0.1s;
+}
+
+/* Hide scrollbar for clean UI */
+::-webkit-scrollbar {
+  width: 0px;
+  background: transparent;
+}
