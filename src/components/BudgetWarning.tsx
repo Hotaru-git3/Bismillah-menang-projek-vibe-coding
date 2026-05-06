@@ -12,10 +12,8 @@ interface BudgetWarningProps {
 export default function BudgetWarning({ expenses, monthlyBudget, onGoToInsights }: BudgetWarningProps) {
   const [dismissed, setDismissed] = useState(false);
 
-  // Weekly budget is roughly total / 4
   const weeklyBudget = monthlyBudget / 4;
   
-  // Get expenses for the last 7 days
   const today = new Date();
   const sevenDaysAgo = new Date(today);
   sevenDaysAgo.setDate(today.getDate() - 7);
@@ -40,9 +38,9 @@ export default function BudgetWarning({ expenses, monthlyBudget, onGoToInsights 
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
           transition={{ duration: 0.3 }}
-          className={`mx-4 mb-6 px-4 py-3 rounded-2xl flex items-center justify-between shadow-sm ${bgColor} ${textColor}`}
+          className={`mb-5 md:mb-6 px-4 py-3 md:px-5 md:py-3.5 rounded-2xl flex items-center justify-between shadow-sm ${bgColor} ${textColor}`}
         >
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 min-w-0">
              <AlertTriangle className="w-5 h-5 shrink-0" />
              <p className="text-sm font-medium leading-tight">
                {isCritical 
@@ -56,14 +54,14 @@ export default function BudgetWarning({ expenses, monthlyBudget, onGoToInsights 
                 setDismissed(true);
                 onGoToInsights?.();
               }}
-              className="shrink-0 ml-3 px-3 py-2 text-xs font-semibold rounded-lg bg-white/20 hover:bg-white/30 text-center"
+              className="shrink-0 ml-3 px-3 py-2 text-xs font-semibold rounded-lg bg-white/20 hover:bg-white/30 text-center transition-colors"
             >
               Cek Insights
             </button>
           ) : (
             <button 
               onClick={() => setDismissed(true)}
-              className="shrink-0 ml-3 px-3 py-1 text-xs font-semibold rounded-lg bg-black/10 hover:bg-black/20"
+              className="shrink-0 ml-3 px-3 py-1.5 text-xs font-semibold rounded-lg bg-black/10 hover:bg-black/20 transition-colors"
             >
               Dimengerti
             </button>

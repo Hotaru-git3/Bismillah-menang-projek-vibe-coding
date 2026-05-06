@@ -14,8 +14,8 @@ export default function BottomNav({ activeTab, onChange }: BottomNavProps) {
   ] as const;
 
   return (
-    <div className="absolute z-40 bottom-0 left-0 right-0 bg-white/95 backdrop-blur border-t border-rk-brown/5 px-6 py-2 pb-safe shadow-[0_-4px_20px_rgba(62,39,35,0.03)] sm:rounded-b-[2.5rem]">
-      <div className="flex justify-between items-center w-full">
+    <div className="relative z-40 bg-white/95 backdrop-blur border-t border-rk-brown/5 px-4 py-1.5 pb-safe shadow-[0_-4px_20px_rgba(62,39,35,0.03)]">
+      <div className="flex justify-between items-center w-full max-w-lg mx-auto">
         {tabs.map((t) => {
           const isActive = activeTab === t.id;
           return (

@@ -64,21 +64,21 @@ export default function ExpenseList({ expenses, lastAddedId, onUndo, onDeleteExp
   };
 
   return (
-    <div className="px-4 pb-24">
-      <div className="flex items-center justify-between mb-4">
+    <div className="px-4 md:px-0 pb-24 md:pb-4">
+      <div className="flex items-center justify-between mb-4 mt-2">
         <h3 className="text-sm font-semibold tracking-wide text-rk-brown/80 uppercase">Terbaru</h3>
-        <div className="relative w-1/2">
+        <div className="relative w-48 md:w-56 lg:w-64">
           <Search className="w-4 h-4 text-rk-brown/40 absolute left-3 top-1/2 -translate-y-1/2" />
           <input 
             type="text" 
             placeholder="Cari..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-white border border-rk-brown/10 rounded-full py-1.5 pl-9 pr-4 text-xs text-rk-brown focus:outline-none focus:border-rk-gold transition-colors"
+            className="w-full bg-white border border-rk-brown/10 rounded-full py-2 pl-9 pr-4 text-xs text-rk-brown focus:outline-none focus:border-rk-gold focus:ring-1 focus:ring-rk-gold/20 transition-all shadow-[0_2px_8px_rgba(62,39,35,0.02)] placeholder:text-rk-brown/30"
           />
         </div>
       </div>
-      <div className="flex flex-col gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 md:mt-2">
         {filteredExpenses.length === 0 && searchQuery && (
            <div className="text-center py-8 text-rk-brown/50 text-sm">
              Nggak nemu pengeluaran buat "{searchQuery}"
@@ -93,7 +93,7 @@ export default function ExpenseList({ expenses, lastAddedId, onUndo, onDeleteExp
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ delay: i * 0.05 }}
               key={expense.id} 
-              className="flex flex-col p-4 bg-white rounded-2xl shadow-[0_2px_10px_rgba(62,39,35,0.04)] relative"
+              className="flex flex-col p-4 bg-white rounded-2xl shadow-[0_2px_10px_rgba(62,39,35,0.04)] hover:shadow-[0_4px_16px_rgba(62,39,35,0.06)] relative transition-shadow duration-200"
             >
               {editingId === expense.id ? (
                 <div className="flex flex-col gap-3">

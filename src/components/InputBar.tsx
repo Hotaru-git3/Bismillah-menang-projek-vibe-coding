@@ -18,11 +18,9 @@ export default function InputBar({ onExpenseAdded, onSetMood }: InputBarProps) {
   const [nudge, setNudge] = useState('');
   const [lastExpenseId, setLastExpenseId] = useState<string | null>(null);
   
-  // Features toggles
   const [isSplitBill, setIsSplitBill] = useState(false);
   const [isListening, setIsListening] = useState(false);
 
-  // Web Speech API
   const recognitionRef = useRef<any>(null);
 
   useEffect(() => {
@@ -61,10 +59,6 @@ export default function InputBar({ onExpenseAdded, onSetMood }: InputBarProps) {
   const handleSubmit = async (e?: { preventDefault: () => void }) => {
     if (e) e.preventDefault();
     if (!input.trim() || isProcessing) return;
-
-    if (isSplitBill && !input.toLowerCase().includes('bagi')) {
-       // if split bill turned on but no info on how many people, let's append default prompt
-    }
 
     const sanitized = sanitizeInput(input);
     setIsProcessing(true);
@@ -112,15 +106,11 @@ export default function InputBar({ onExpenseAdded, onSetMood }: InputBarProps) {
       setInput('');
       setIsSplitBill(false);
       
-      // Haptic feedback
       if (typeof window !== 'undefined' && window.navigator && window.navigator.vibrate) {
         window.navigator.vibrate(50);
       }
       
       onExpenseAdded(newExp);
-
-      // We explicitly DO NOT auto-hide success immediately so user can select mood
-      // They can dismiss it themselves or it will be replaced by new input
 
     } catch (err) {
       console.error(err);
@@ -137,14 +127,14 @@ export default function InputBar({ onExpenseAdded, onSetMood }: InputBarProps) {
   };
 
   return (
-    <div className="px-4 pb-6 pt-2 w-full mt-auto">
+    <div className="w-full">
       <form onSubmit={handleSubmit} className="relative w-full">
         {/* Helper toggles */}
-        <div className="flex gap-3 mb-2 justify-end px-1">
+        <div className="flex gap-3 mb-2 justify-end">
           <button 
             type="button" 
             onClick={() => setIsSplitBill(!isSplitBill)}
-            className={`flex items-center gap-1.5 text-xs font-semibold px-2 py-1 rounded-full transition-colors ${isSplitBill ? 'bg-rk-gold text-white' : 'bg-rk-brown/5 text-rk-brown/50 hover:bg-rk-brown/10'}`}
+            className={`flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded-full transition-colors ${isSplitBill ? 'bg-rk-gold text-white' : 'bg-rk-brown/5 text-rk-brown/50 hover:bg-rk-brown/10'}`}
           >
             <Users className="w-3.5 h-3.5" /> Split Bill?
           </button>
@@ -157,7 +147,7 @@ export default function InputBar({ onExpenseAdded, onSetMood }: InputBarProps) {
             onChange={(e) => setInput(e.target.value)}
             disabled={isProcessing || isSuccess}
             placeholder={isSplitBill ? "Ketik: 'nasi goreng 60rb bagi 3'" : "Ketik: 'nasi goreng 15rb'"}
-            className="w-full bg-transparent pl-5 pr-20 py-4 text-rk-brown placeholder-rk-brown/40 focus:outline-none"
+            className="w-full bg-transparent pl-5 pr-24 py-4 text-rk-brown placeholder-rk-brown/40 focus:outline-none text-sm md:text-base"
             maxLength={500}
           />
           <div className="absolute right-2 flex items-center gap-1">
@@ -205,7 +195,7 @@ export default function InputBar({ onExpenseAdded, onSetMood }: InputBarProps) {
             </AnimatePresence>
             
             {(!isProcessing && !isSuccess && input) && (
-               <button type="submit" className="bg-rk-brown text-rk-cream px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-rk-brown-light active:scale-95 transition-transform mr-1">
+               <button type="submit" className="bg-rk-brown text-rk-cream px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-rk-brown-light active:scale-95 transition-transform mr-1">
                  Catat
                </button>
             )}
@@ -218,7 +208,7 @@ export default function InputBar({ onExpenseAdded, onSetMood }: InputBarProps) {
               initial={{ height: 0, opacity: 0, y: -10 }}
               animate={{ height: 'auto', opacity: 1, y: 0 }}
               exit={{ height: 0, opacity: 0 }}
-              className="mt-3 text-center"
+              className="mt-4 text-center"
             >
               <p className="text-sm italic font-serif text-rk-brown bg-rk-gold/10 inline-block px-4 py-2 rounded-full border border-rk-gold/20 mb-3 text-center shadow-sm">
                 "{nudge}"
@@ -246,7 +236,7 @@ export default function InputBar({ onExpenseAdded, onSetMood }: InputBarProps) {
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              className="mt-3 flex items-center gap-2 text-sm text-rk-red px-2"
+              className="mt-3 flex items-center gap-2 text-sm text-rk-red"
             >
               <span>Waduh, gagal nyatet nih. Coba lagi ya bro.</span>
               <button 

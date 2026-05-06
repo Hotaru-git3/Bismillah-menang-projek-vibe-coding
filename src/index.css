@@ -36,8 +36,25 @@ button:active {
   transition-duration: 0.1s;
 }
 
-/* Hide scrollbar for clean UI */
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 0px;
+  width: 6px;
   background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-rk-cream-dark);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(62, 39, 35, 0.15); /* rk-brown with 15% opacity */
+}
+
+/* Hide complete scrollbar on mobile assuming touch devices */
+@media (max-width: 768px) {
+  ::-webkit-scrollbar {
+    width: 0px;
+    background: transparent;
+  }
 }
