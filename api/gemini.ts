@@ -1,20 +1,7 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-const apiKey = process.env.GEMINI_API_KEY || "";
-const ai = new GoogleGenAI({ apiKey });
-const MODEL = "gemini-3-flash-preview";
-
-let requestTimestamps: number[] = [];
-
-function checkClientRateLimit() {
-  const now = Date.now();
-  requestTimestamps = requestTimestamps.filter(t => now - t < 60000);
-  if (requestTimestamps.length >= 10) {
-    throw new Error("Pelan-pelan bro, AI-nya lagi napas dulu \uD83D\uDE05");
-  }
-  requestTimestamps.push(now);
-}
+const MODEL = "gemini-3.0-flash";
 
 function sanitizeInput(text: string): string {
     if (!text) return "";
@@ -30,13 +17,17 @@ function sanitizeInput(text: string): string {
 }
 
 export default async function handler(req: VercelRequest | any, res: VercelResponse | any) {
-  console.log("GEMINI_API_KEY in gemini.ts is:", apiKey ? apiKey.substring(0, 10) + "..." : "EMPTY");
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
   try {
-    checkClientRateLimit();
+    const apiKey = process.env.GEMINI_API_KEY?.trim() || "";
+    if (!apiKey || apiKey.includes("MY_GE") || (!apiKey.startsWith("AI") && apiKey.length < 30)) {
+        return res.status(401).json({ error: "Waduh, fitur AI-nya belum jalan nih karena API Key kosong (atau salah). Masukin API key Gemini yang valid di menu 'Secrets' AI Studio terus restart servernya ya! 🙏" });
+    }
+    const ai = new GoogleGenAI({ apiKey });
+    
     const { action, payload } = req.body;
 
     if (action === "parseReceiptImage") {

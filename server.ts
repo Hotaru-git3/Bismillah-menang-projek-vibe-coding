@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import { createServer as createViteServer } from 'vite';
@@ -15,7 +16,7 @@ const __dirname = path.dirname(__filename);
 async function startServer() {
   console.log("HEALTH CHECK PRE-VITE GEMINI_API_KEY:", process.env.GEMINI_API_KEY ? process.env.GEMINI_API_KEY.substring(0, 7) : "EMPTY");
   const app = express();
-  const PORT = 3000;
+  const PORT = process.env.PORT || 3000;
 
   app.use(cors());
   app.use(express.json({ limit: '10mb' }));
@@ -23,7 +24,7 @@ async function startServer() {
   // Request mapping for the Vercel-like handler
   // API routes FIRST
   app.get("/api/health", (req, res) => {
-    res.json({ status: "ok" });
+    res.json({ status: "ok", keyLength: process.env.GEMINI_API_KEY ? process.env.GEMINI_API_KEY.length : 0 });
   });
 
   app.post('/api/gemini', async (req, res) => {
@@ -41,7 +42,7 @@ async function startServer() {
     // Production static serving
     const distPath = path.join(__dirname, 'dist');
     app.use(express.static(distPath));
-    app.get('*', (req, res) => {
+    app.get('*all', (req, res) => {
       res.sendFile(path.join(distPath, 'index.html'));
     });
   }
