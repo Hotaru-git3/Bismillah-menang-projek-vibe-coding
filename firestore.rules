@@ -21,8 +21,6 @@ service cloud.firestore {
              && data.name is string && data.name.size() <= 100
              && data.email is string && data.email.size() <= 150
              && data.monthlyBudget is number
-             && data.createdAt == request.time
-             && data.updatedAt == request.time
              && (!('badges' in data) || (data.badges is list && data.badges.size() <= 50))
              && (!('latestSummary' in data) || data.latestSummary == null || data.latestSummary is map)
              && (!('latestRecurring' in data) || data.latestRecurring == null || data.latestRecurring is map)
@@ -37,12 +35,16 @@ service cloud.firestore {
       allow create: if isOwner(userId) 
                     && isValidId(userId)
                     && isValidUser(incoming())
+                    && incoming().createdAt == request.time
+                    && incoming().updatedAt == request.time
                     && incoming().keys().size() >= 5
                     && incoming().keys().size() <= 10;
 
-      allow update: if isOwner(userId) 
+      allow update: if isOwner(userId)
+                    && isValidUser(incoming())
                     && incoming().diff(existing()).affectedKeys().hasOnly(['name', 'monthlyBudget', 'badges', 'latestSummary', 'latestRecurring', 'savedSummaries', 'savedRecurring', 'updatedAt'])
                     && incoming().updatedAt == request.time
+                    && incoming().createdAt == existing().createdAt
                     && (!('name' in incoming().diff(existing()).affectedKeys()) || (incoming().name is string && incoming().name.size() <= 100))
                     && (!('monthlyBudget' in incoming().diff(existing()).affectedKeys()) || incoming().monthlyBudget is number)
                     && (!('badges' in incoming().diff(existing()).affectedKeys()) || (incoming().badges is list && incoming().badges.size() <= 50))
@@ -59,7 +61,6 @@ service cloud.firestore {
              && data.text is string && data.text.size() <= 200
              && data.category is string && data.category.size() <= 100
              && data.date is string && data.date.size() <= 50
-             && data.createdAt == request.time
              && (!('mood' in data) || (data.mood is string && data.mood.size() <= 20))
              && (!('splitBillId' in data) || (data.splitBillId is string && data.splitBillId.size() <= 128));
     }
@@ -70,14 +71,17 @@ service cloud.firestore {
       
       allow create: if isOwner(userId) && isValidId(userId) && isValidId(expenseId)
                     && isValidExpense(incoming(), userId)
+                    && incoming().createdAt == request.time
                     && incoming().keys().size() >= 6 && incoming().keys().size() <= 8;
 
       allow update: if isOwner(userId) && isValidId(userId) && isValidId(expenseId)
-                    // You can only update mood or text/amount if needed. Let's allow specific fields.
-                    && incoming().diff(existing()).affectedKeys().hasOnly(['text', 'amount', 'category', 'mood'])
+                    && isValidExpense(incoming(), userId)
+                    && incoming().diff(existing()).affectedKeys().hasOnly(['text', 'amount', 'category', 'mood', 'date'])
+                    && incoming().createdAt == existing().createdAt
                     && (!('text' in incoming().diff(existing()).affectedKeys()) || (incoming().text is string && incoming().text.size() <= 200))
                     && (!('amount' in incoming().diff(existing()).affectedKeys()) || incoming().amount is number)
                     && (!('category' in incoming().diff(existing()).affectedKeys()) || (incoming().category is string && incoming().category.size() <= 100))
+                    && (!('date' in incoming().diff(existing()).affectedKeys()) || (incoming().date is string && incoming().date.size() <= 50))
                     && (!('mood' in incoming().diff(existing()).affectedKeys()) || (incoming().mood is string && incoming().mood.size() <= 20));
 
       allow delete: if isOwner(userId) && isValidId(userId) && isValidId(expenseId);
@@ -97,8 +101,7 @@ service cloud.firestore {
              && data.originalAmount is number
              && data.date is string && data.date.size() <= 50
              && data.friends is list && data.friends.size() <= 30
-             && (data.friends.size() == 0 || isValidSplitBillItem(data.friends[0]))
-             && data.createdAt == request.time;
+             && (data.friends.size() == 0 || isValidSplitBillItem(data.friends[0]));
     }
 
     match /users/{userId}/splitBills/{splitBillId} {
@@ -107,10 +110,13 @@ service cloud.firestore {
       
       allow create: if isOwner(userId) && isValidId(userId) && isValidId(splitBillId)
                     && isValidSplitBill(incoming(), userId)
+                    && incoming().createdAt == request.time
                     && incoming().keys().size() == 6;
 
       allow update: if isOwner(userId) && isValidId(userId) && isValidId(splitBillId)
+                    && isValidSplitBill(incoming(), userId)
                     && incoming().diff(existing()).affectedKeys().hasOnly(['friends'])
+                    && incoming().createdAt == existing().createdAt
                     && incoming().friends is list && incoming().friends.size() <= 30
                     && (incoming().friends.size() == 0 || isValidSplitBillItem(incoming().friends[0]));
 
@@ -124,8 +130,7 @@ service cloud.firestore {
              && data.dateAssigned is string && data.dateAssigned.size() <= 50
              && data.completed is bool
              && data.targetAmount is number
-             && data.progressAmount is number
-             && data.createdAt == request.time;
+             && data.progressAmount is number;
     }
 
     match /users/{userId}/savingsChallenges/{challengeId} {
@@ -134,10 +139,13 @@ service cloud.firestore {
       
       allow create: if isOwner(userId) && isValidId(userId) && isValidId(challengeId)
                     && isValidChallenge(incoming(), userId)
+                    && incoming().createdAt == request.time
                     && incoming().keys().size() == 7;
 
       allow update: if isOwner(userId) && isValidId(userId) && isValidId(challengeId)
+                    && isValidChallenge(incoming(), userId)
                     && incoming().diff(existing()).affectedKeys().hasOnly(['completed', 'progressAmount'])
+                    && incoming().createdAt == existing().createdAt
                     && (!('completed' in incoming().diff(existing()).affectedKeys()) || incoming().completed is bool)
                     && (!('progressAmount' in incoming().diff(existing()).affectedKeys()) || incoming().progressAmount is number);
                     
