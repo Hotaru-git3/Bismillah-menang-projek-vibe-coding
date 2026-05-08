@@ -66,6 +66,8 @@ export default function AuthForm() {
          <div className="relative">
             <Mail className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
             <input 
+              id="auth-email-input"
+              name="email"
               type="email" 
               placeholder="Email" 
               value={email}
@@ -77,6 +79,8 @@ export default function AuthForm() {
          <div className="relative">
             <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
             <input 
+              id="auth-password-input"
+              name="password"
               type="password" 
               placeholder="Password" 
               value={password}

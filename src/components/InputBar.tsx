@@ -213,6 +213,8 @@ export default function InputBar({ onExpenseAdded, onSetMood }: InputBarProps) {
 
         <div className="relative flex items-center shadow-[0_4px_20px_rgba(62,39,35,0.08)] bg-white rounded-2xl border border-rk-brown/5 overflow-hidden">
           <input
+            id="expense-input"
+            name="expenseInput"
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -222,6 +224,8 @@ export default function InputBar({ onExpenseAdded, onSetMood }: InputBarProps) {
             maxLength={200}
           />
           <input 
+            id="receipt-file-input"
+            name="receiptFileInput"
             type="file" 
             accept="image/*" 
             capture="environment" 
