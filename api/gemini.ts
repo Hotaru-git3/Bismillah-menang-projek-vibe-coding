@@ -5,6 +5,17 @@ const apiKey = process.env.GEMINI_API_KEY || "";
 const ai = new GoogleGenAI({ apiKey });
 const MODEL = "gemini-3-flash-preview";
 
+let requestTimestamps: number[] = [];
+
+function checkClientRateLimit() {
+  const now = Date.now();
+  requestTimestamps = requestTimestamps.filter(t => now - t < 60000);
+  if (requestTimestamps.length >= 10) {
+    throw new Error("Pelan-pelan bro, AI-nya lagi napas dulu \uD83D\uDE05");
+  }
+  requestTimestamps.push(now);
+}
+
 function sanitizeInput(text: string): string {
     if (!text) return "";
     let sanitized = text.replace(/<[^>]*>?/gm, '');
@@ -19,17 +30,12 @@ function sanitizeInput(text: string): string {
 }
 
 export default async function handler(req: VercelRequest | any, res: VercelResponse | any) {
-  console.log("GEMINI_API_KEY in gemini.ts is:", apiKey ? apiKey.substring(0, 10) + "..." : "EMPTY");
-  
-  if (!apiKey) {
-    return res.status(500).json({ error: "Server Configuration Error: GEMINI_API_KEY environment variable is missing on the server. Please add it to your hosting provider settings (e.g., Vercel Environment Variables)." });
-  }
-
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
   try {
+    checkClientRateLimit();
     const { action, payload } = req.body;
 
     if (action === "parseReceiptImage") {
@@ -287,7 +293,9 @@ export default async function handler(req: VercelRequest | any, res: VercelRespo
   } catch (e: any) {
     console.error("Vercel API Error:", e);
     return res.status(500).json({ 
-      error: e && e.message ? e.message : String(e)
+      error: e.message && (e.message.includes("Pelan-pelan bro") || e.message.includes("Input tidak valid")) 
+        ? e.message 
+        : "AI-nya lagi sibuk, coba lagi sebentar ya \uD83D\uDE4F" 
     });
   }
 }

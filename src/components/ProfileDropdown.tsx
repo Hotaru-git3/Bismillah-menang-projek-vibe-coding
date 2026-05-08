@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useFirebase } from './FirebaseProvider';
-import { User as UserIcon, Settings, LogOut, ChevronDown } from 'lucide-react';
+import { User as UserIcon, Settings, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 export default function ProfileDropdown({ onNavigate, onOpenProfile }: { onNavigate: (tab: 'dashboard' | 'log' | 'insights' | 'settings') => void, onOpenProfile: () => void }) {
@@ -35,15 +35,12 @@ export default function ProfileDropdown({ onNavigate, onOpenProfile }: { onNavig
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <div 
+      <button 
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1.5 focus:outline-none cursor-pointer group"
+        className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-rk-gold text-white flex items-center justify-center font-semibold text-sm shadow-sm border-2 border-white hover:scale-105 transition-transform cursor-pointer"
       >
-        <div className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-rk-gold text-white flex items-center justify-center font-semibold text-sm shadow-sm border-2 border-white group-hover:scale-105 transition-transform">
-          {initials}
-        </div>
-        <ChevronDown className={`w-4 h-4 text-rk-brown/70 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
-      </div>
+        {initials}
+      </button>
 
       <AnimatePresence>
         {isOpen && (
@@ -66,20 +63,20 @@ export default function ProfileDropdown({ onNavigate, onOpenProfile }: { onNavig
             <div className="p-2">
               <button 
                 onClick={() => { setIsOpen(false); onOpenProfile(); }}
-                className="w-full text-left flex items-center gap-3 px-3 py-2.5 text-sm text-rk-brown hover:bg-rk-brown/10 active:bg-rk-brown/10 rounded-xl transition-colors cursor-pointer"
+                className="w-full text-left flex items-center gap-3 px-3 py-2.5 text-sm text-rk-brown hover:bg-rk-brown/5 rounded-xl transition-colors cursor-pointer"
               >
                 <UserIcon className="w-4 h-4 text-rk-brown/60" /> Profile
               </button>
               <button 
                 onClick={() => { setIsOpen(false); onNavigate('settings'); }}
-                className="w-full text-left flex items-center gap-3 px-3 py-2.5 text-sm text-rk-brown hover:bg-rk-brown/10 active:bg-rk-brown/10 rounded-xl transition-colors cursor-pointer"
+                className="w-full text-left flex items-center gap-3 px-3 py-2.5 text-sm text-rk-brown hover:bg-rk-brown/5 rounded-xl transition-colors cursor-pointer"
               >
                 <Settings className="w-4 h-4 text-rk-brown/60" /> Pengaturan
               </button>
               <div className="h-px bg-rk-brown/5 my-1" />
               <button 
                 onClick={async () => { setIsOpen(false); await signOutGoogle(); }}
-                className="w-full text-left flex items-center gap-3 px-3 py-2.5 text-sm text-rk-red hover:bg-rk-red/10 active:bg-rk-red/10 rounded-xl transition-colors font-medium cursor-pointer"
+                className="w-full text-left flex items-center gap-3 px-3 py-2.5 text-sm text-rk-red hover:bg-rk-red/5 rounded-xl transition-colors font-medium cursor-pointer"
               >
                 <LogOut className="w-4 h-4" /> Logout
               </button>
