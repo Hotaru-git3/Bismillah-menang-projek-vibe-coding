@@ -43,7 +43,6 @@ export const api = onRequest({
     }
 
     try {
-        checkRateLimit();
         const aiClient = getAiClient();
         const action = req.body.action;
         const data = req.body.data;
