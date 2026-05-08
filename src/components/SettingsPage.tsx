@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Upload, LogOut, Wallet, Mail, Lock, Instagram, Linkedin, Github } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Upload, LogOut, Wallet, Mail, Lock, Instagram, Linkedin, Github, X } from 'lucide-react';
 import { UserProfile, Expense } from '../utils/storage';
 import { useFirebase } from './FirebaseProvider';
 import { syncUserProfile } from '../utils/firebaseUtils';
@@ -7,12 +8,16 @@ import { syncUserProfile } from '../utils/firebaseUtils';
 interface SettingsProps {
   profile: UserProfile;
   expenses: Expense[];
+  onDeleteAllExpenses?: () => Promise<void>;
 }
 
-export default function SettingsPage({ profile, expenses }: SettingsProps) {
+export default function SettingsPage({ profile, expenses, onDeleteAllExpenses }: SettingsProps) {
   const { signOutGoogle, refreshProfile } = useFirebase();
   const [isEditingBudget, setIsEditingBudget] = useState(false);
   const [budgetInput, setBudgetInput] = useState(profile.monthlyBudget.toString());
+
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleExportData = async () => {
     const csvContent = "Tanggal,Nominal,Kategori,Deskripsi\n" + 
@@ -112,7 +117,7 @@ export default function SettingsPage({ profile, expenses }: SettingsProps) {
           </button>
           
           <button 
-            onClick={() => alert('Fitur Hapus Semua Data sedang dalam perbaikan.')}
+            onClick={() => setShowDeleteConfirm(true)}
             className="cursor-pointer group w-full flex items-center justify-between px-5 text-gray-700 bg-gray-50 hover:bg-red-50 hover:text-red-600 hover:border-red-100 border border-gray-100 py-4 rounded-xl font-medium transition-all text-sm"
           >
             <div className="flex items-center gap-3">
@@ -145,6 +150,59 @@ export default function SettingsPage({ profile, expenses }: SettingsProps) {
           </button>
         </div>
       </div>
+
+      {/* Custom Delete Confirmation Modal */}
+      <AnimatePresence>
+        {showDeleteConfirm && (
+          <>
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[100] cursor-pointer"
+              onClick={() => !isDeleting && setShowDeleteConfirm(false)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-[400px] bg-white rounded-3xl p-6 shadow-2xl z-[101] flex flex-col items-center text-center"
+            >
+              <div className="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mb-4">
+                <Lock className="w-8 h-8" />
+              </div>
+              <h3 className="text-xl font-serif font-bold text-gray-900 mb-2">Yakin mau hapus semua?</h3>
+              <p className="text-gray-500 text-sm mb-6 leading-relaxed">
+                Catatan pengeluaran lu bakal ilang semua dan <b className="text-red-500">gak bisa dibalikin lagi</b>. Yakin nih mau dikosongin?
+              </p>
+              
+              <div className="flex gap-3 w-full">
+                <button 
+                  onClick={() => setShowDeleteConfirm(false)}
+                  disabled={isDeleting}
+                  className="flex-1 py-3 rounded-xl font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors disabled:opacity-50 cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button 
+                  onClick={async () => {
+                    setIsDeleting(true);
+                    if (onDeleteAllExpenses) {
+                      await onDeleteAllExpenses();
+                    }
+                    setIsDeleting(false);
+                    setShowDeleteConfirm(false);
+                  }}
+                  disabled={isDeleting}
+                  className="flex-1 py-3 rounded-xl font-medium text-white bg-red-500 hover:bg-red-600 transition-colors disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
+                >
+                  {isDeleting ? 'Menghapus...' : 'Ya, Hapus'}
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       <div className="mt-8 text-center text-rk-brown/40 text-xs font-medium pb-8 flex flex-col items-center gap-4">
         <div className="space-y-1">

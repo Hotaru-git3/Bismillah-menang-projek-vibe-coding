@@ -253,7 +253,16 @@ export default function App() {
                 transition={{ type: "spring", stiffness: 300, damping: 25, mass: 0.5 }}
                 className="pt-2 h-full"
               >
-                <SettingsPage profile={profile} expenses={expenses} />
+                <SettingsPage 
+                  profile={profile} 
+                  expenses={expenses} 
+                  onDeleteAllExpenses={async () => {
+                    for (const exp of expenses) {
+                      await handleDeleteExpense(exp.id);
+                    }
+                    handleShowToast('Semua catatan berhasil dihapus.');
+                  }}
+                />
               </motion.div>
             )}
            </AnimatePresence>
