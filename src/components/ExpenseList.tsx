@@ -71,6 +71,8 @@ export default function ExpenseList({ expenses, lastAddedId, onUndo, onDeleteExp
         <div className="relative w-48 md:w-56 lg:w-64">
           <Search className="w-4 h-4 text-rk-brown/40 absolute left-3 top-1/2 -translate-y-1/2" />
           <input 
+            id="expense-search-input"
+            name="expenseSearch"
             type="text" 
             placeholder="Cari..." 
             value={searchQuery}
@@ -99,6 +101,8 @@ export default function ExpenseList({ expenses, lastAddedId, onUndo, onDeleteExp
               {editingId === expense.id ? (
                 <div className="flex flex-col gap-3">
                   <input 
+                    id={`expense-edit-name-input-${expense.id}`}
+                    name="expenseEditName"
                     type="text" 
                     value={editText} 
                     onChange={e => setEditText(e.target.value)} 
@@ -108,6 +112,8 @@ export default function ExpenseList({ expenses, lastAddedId, onUndo, onDeleteExp
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-semibold text-rk-brown/60">Rp</span>
                     <input 
+                      id={`expense-edit-amount-input-${expense.id}`}
+                      name="expenseEditAmount"
                       type="number" 
                       value={editAmount} 
                       onChange={e => setEditAmount(e.target.value)} 

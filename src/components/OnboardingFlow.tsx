@@ -90,6 +90,8 @@ export default function OnboardingFlow({ onComplete }: OnboardingProps) {
           >
             {step === 1 && (
               <input 
+                id="onboarding-name-input"
+                name="onboardingName"
                 type="text" 
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -105,6 +107,8 @@ export default function OnboardingFlow({ onComplete }: OnboardingProps) {
               <div className="relative flex items-center justify-center">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-rk-brown/60 text-xl font-serif">Rp</span>
                 <input 
+                  id="onboarding-budget-input"
+                  name="onboardingBudget"
                   type="number" 
                   value={budget}
                   onChange={(e) => setBudget(e.target.value)}
@@ -118,6 +122,8 @@ export default function OnboardingFlow({ onComplete }: OnboardingProps) {
 
             {step === 3 && (
               <textarea 
+                id="onboarding-concern-input"
+                name="onboardingConcern"
                 value={concern}
                 onChange={(e) => setConcern(e.target.value)}
                 placeholder="Suka bocor buat jajan / Ongkos kegedean / Gak bisa nabung"

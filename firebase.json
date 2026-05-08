@@ -6,6 +6,21 @@
       "**/.*",
       "**/node_modules/**"
     ],
+    "headers": [
+      {
+        "source": "**",
+        "headers": [
+          {
+            "key": "Cross-Origin-Opener-Policy",
+            "value": "same-origin-allow-popups"
+          },
+          {
+            "key": "Content-Security-Policy",
+            "value": "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://apis.google.com https://www.gstatic.com https://*.firebaseio.com https://firestore.googleapis.com; object-src 'none';"
+          }
+        ]
+      }
+    ],
     "rewrites": [
       {
         "source": "/api/**",

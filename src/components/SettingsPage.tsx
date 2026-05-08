@@ -76,6 +76,8 @@ export default function SettingsPage({ profile, expenses }: SettingsProps) {
                  <div className="flex items-center gap-3 mt-2">
                    <span className="text-xl font-serif text-gray-900">Rp</span>
                    <input
+                     id="settings-budget-input"
+                     name="settingsBudget"
                      type="number"
                      value={budgetInput}
                      onChange={e => setBudgetInput(e.target.value)}

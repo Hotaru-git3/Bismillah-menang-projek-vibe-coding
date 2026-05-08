@@ -73,6 +73,8 @@ export default function ProfileModal({ isOpen, onClose }: { isOpen: boolean, onC
               ) : (
                 <div className="w-full max-w-[250px] flex items-center gap-2">
                   <input 
+                    id="profile-name-input"
+                    name="profileName"
                     type="text"
                     value={editName}
                     onChange={(e) => setEditName(e.target.value)}
