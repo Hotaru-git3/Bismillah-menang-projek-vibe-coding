@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { UserProfile, saveProfile } from '../utils/storage';
+import { User, Wallet, AlertCircle } from 'lucide-react';
+import { UserProfile } from '../utils/storage';
 import { sanitizeInput } from '../utils/helpers';
 
 interface OnboardingProps {
@@ -17,11 +18,11 @@ export default function OnboardingFlow({ onComplete }: OnboardingProps) {
   const handleNext = () => {
     if (step === 1) {
       if (!name.trim()) {
-        setError('Siapa nama lo, bro?');
+        setError('Kenalan dulu, nama lo siapa?');
         return;
       }
       if (name.length > 50) {
-         setError('Nama kepanjangan bro.'); return;
+         setError('Nama kepanjangan, max 50 karakter.'); return;
       }
       setError('');
       setStep(2);
@@ -39,7 +40,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingProps) {
       setStep(3);
     } else if (step === 3) {
       if (concern.length > 200) {
-        setError('Kepanjangan bro, max 200 karakter.');
+        setError('Teks kepanjangan, max 200 karakter.');
         return;
       }
       const profile: UserProfile = {
@@ -47,7 +48,6 @@ export default function OnboardingFlow({ onComplete }: OnboardingProps) {
         monthlyBudget: parseInt(budget),
         concern: sanitizeInput(concern) || 'Pengeluaran harian',
       };
-      saveProfile(profile);
       onComplete(profile);
     }
   };
@@ -58,9 +58,9 @@ export default function OnboardingFlow({ onComplete }: OnboardingProps) {
     "Apa kekhawatiran terbesar lo soal duit?";
 
   return (
-    <div className="min-h-screen bg-rk-cream sm:bg-[#DED5C9] sm:py-8 flex justify-center items-center">
-      <div className="flex flex-col h-screen sm:h-[850px] w-full max-w-[480px] bg-rk-cream sm:rounded-[2.5rem] sm:shadow-2xl overflow-hidden ring-1 ring-rk-brown/5 relative p-6 justify-center">
-      <div className="w-full relative pt-12 pb-20">
+    <div className="min-h-screen bg-rk-cream sm:bg-[#DED5C9] sm:py-8 flex justify-center items-center p-4">
+      <div className="flex flex-col min-h-[100dvh] sm:min-h-[550px] sm:h-auto w-full max-w-[440px] bg-rk-cream sm:rounded-[2.5rem] sm:shadow-2xl overflow-hidden ring-1 ring-rk-brown/5 relative p-6 justify-center">
+      <div className="w-full relative pt-12 pb-12 sm:pb-20">
         
         {/* Tasbih progress indicator */}
         <div className="flex gap-2 justify-center mb-12">
@@ -72,7 +72,12 @@ export default function OnboardingFlow({ onComplete }: OnboardingProps) {
           ))}
         </div>
 
-        <h2 className="text-3xl font-serif text-rk-brown mb-8 text-center">{currentTitle}</h2>
+        <h2 className="text-3xl font-serif text-rk-brown mb-8 text-center flex flex-col items-center gap-4">
+          {step === 1 && <User className="w-12 h-12 text-rk-gold" />}
+          {step === 2 && <Wallet className="w-12 h-12 text-rk-gold" />}
+          {step === 3 && <AlertCircle className="w-12 h-12 text-rk-gold" />}
+          {currentTitle}
+        </h2>
         
         <AnimatePresence mode="wait">
           <motion.div

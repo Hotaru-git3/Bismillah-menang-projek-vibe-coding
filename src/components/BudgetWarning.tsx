@@ -54,14 +54,14 @@ export default function BudgetWarning({ expenses, monthlyBudget, onGoToInsights 
                 setDismissed(true);
                 onGoToInsights?.();
               }}
-              className="shrink-0 ml-3 px-3 py-2 text-xs font-semibold rounded-lg bg-white/20 hover:bg-white/30 text-center transition-colors"
+              className="cursor-pointer shrink-0 ml-3 px-3 py-2 text-xs font-semibold rounded-lg bg-white/20 hover:bg-white/30 text-center transition-colors"
             >
               Cek Insights
             </button>
           ) : (
             <button 
               onClick={() => setDismissed(true)}
-              className="shrink-0 ml-3 px-3 py-1.5 text-xs font-semibold rounded-lg bg-black/10 hover:bg-black/20 transition-colors"
+              className="cursor-pointer shrink-0 ml-3 px-3 py-1.5 text-xs font-semibold rounded-lg bg-black/10 hover:bg-black/20 transition-colors"
             >
               Dimengerti
             </button>

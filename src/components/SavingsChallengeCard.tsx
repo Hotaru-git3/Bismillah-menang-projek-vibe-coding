@@ -1,21 +1,18 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Expense, getSavingsChallenge, saveSavingsChallenge, SavingsChallenge } from '../utils/storage';
+import { Expense, SavingsChallenge } from '../utils/storage';
 import { generateSavingsChallenge } from '../services/geminiService';
 import { Target, Sparkles, Trophy } from 'lucide-react';
 import { formatRupiah } from '../utils/helpers';
+import { useFirebase } from './FirebaseProvider';
+import { addChallengeToFirestore, updateChallengeInFirestore } from '../utils/firebaseUtils';
 
 export default function SavingsChallengeCard({ expenses }: { expenses: Expense[] }) {
-  const [challenge, setChallenge] = useState<SavingsChallenge | null>(null);
+  const { savingsChallenges } = useFirebase();
+  const challenge = savingsChallenges && savingsChallenges.length > 0 ? savingsChallenges[0] : null;
+  
   const [isGenerating, setIsGenerating] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
-
-  useEffect(() => {
-    const ch = getSavingsChallenge();
-    if (ch) {
-      setChallenge(ch);
-    }
-  }, []);
 
   const handleGenerate = async () => {
     setIsGenerating(true);
@@ -29,8 +26,7 @@ export default function SavingsChallengeCard({ expenses }: { expenses: Expense[]
         targetAmount: res.targetAmount,
         progressAmount: 0
       };
-      saveSavingsChallenge(newCh);
-      setChallenge(newCh);
+      await addChallengeToFirestore(newCh);
     } catch (e) {
       console.error(e);
     } finally {
@@ -38,11 +34,10 @@ export default function SavingsChallengeCard({ expenses }: { expenses: Expense[]
     }
   };
 
-  const markCompleted = () => {
+  const markCompleted = async () => {
     if (challenge) {
       const updated = { ...challenge, completed: true, progressAmount: challenge.targetAmount };
-      saveSavingsChallenge(updated);
-      setChallenge(updated);
+      await updateChallengeInFirestore(challenge.id, updated);
       setShowConfetti(true);
       setTimeout(() => setShowConfetti(false), 2000);
     }
@@ -54,7 +49,6 @@ export default function SavingsChallengeCard({ expenses }: { expenses: Expense[]
          <Target className="w-5 h-5 text-rk-gold shrink-0" />
          <h3 className="font-semibold text-rk-brown text-sm uppercase tracking-wide">Tantangan Hemat Minggu Ini</h3>
       </div>
-
       <div className="flex-1 flex flex-col justify-center">
         {isGenerating ? (
            <div className="flex items-center gap-2 text-sm text-rk-brown/60 animate-pulse py-4">
@@ -71,7 +65,7 @@ export default function SavingsChallengeCard({ expenses }: { expenses: Expense[]
                <Trophy className="w-6 h-6 text-rk-gold-dark shrink-0 mt-0.5" />
                <div>
                  <p className="text-sm font-medium text-rk-brown leading-snug">
-                   Lo berhasil, bro. {formatRupiah(challenge.targetAmount)} itu cukup buat investasi emas minggu depan!
+                   Lo berhasil! {formatRupiah(challenge.targetAmount)} itu lumayan banget buat tabungan!
                  </p>
                </div>
              </motion.div>
@@ -93,7 +87,7 @@ export default function SavingsChallengeCard({ expenses }: { expenses: Expense[]
                 
                 <button 
                   onClick={markCompleted}
-                  className="w-full py-2.5 bg-rk-brown/5 hover:bg-rk-brown/10 active:scale-95 transition-all text-rk-brown text-xs font-semibold rounded-xl"
+                  className="cursor-pointer w-full py-2.5 bg-rk-brown/5 hover:bg-rk-brown/10 active:scale-95 transition-all text-rk-brown text-xs font-semibold rounded-xl"
                 >
                   Tandain Selesai
                 </button>
@@ -104,7 +98,7 @@ export default function SavingsChallengeCard({ expenses }: { expenses: Expense[]
              <p className="text-sm text-rk-brown/60 mb-4">Tantang diri lo buat nyisihin uang minggu ini.</p>
              <button 
                 onClick={handleGenerate}
-                className="bg-rk-gold text-white font-medium px-4 py-2.5 rounded-xl text-sm hover:bg-rk-gold-dark active:scale-95 transition-all w-full"
+                className="cursor-pointer bg-rk-gold text-white font-medium px-4 py-2.5 rounded-xl text-sm hover:bg-rk-gold-dark active:scale-95 transition-all w-full"
              >
                 Minta Tantangan
              </button>

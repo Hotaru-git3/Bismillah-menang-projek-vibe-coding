@@ -14,6 +14,7 @@ interface ExpenseListProps {
 
 export default function ExpenseList({ expenses, lastAddedId, onUndo, onDeleteExpense, onUpdateExpense }: ExpenseListProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [editAmount, setEditAmount] = useState('');
   const [editText, setEditText] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -33,7 +34,7 @@ export default function ExpenseList({ expenses, lastAddedId, onUndo, onDeleteExp
              <path d="M40 30 Q50 10 70 30" />
           </svg>
         </div>
-        <p className="font-serif italic text-lg mb-2">Belum ada catatan nih, bro.</p>
+        <p className="font-serif italic text-lg mb-2">Belum ada catatan nih, mulai catat yuk.</p>
         <p className="text-sm">Mulai catat pengeluaran pertama lo di tab Log!</p>
       </div>
     );
@@ -88,10 +89,10 @@ export default function ExpenseList({ expenses, lastAddedId, onUndo, onDeleteExp
           {filteredExpenses.map((expense, i) => (
             <motion.div 
               layout
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, scale: 0.98, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ delay: i * 0.05 }}
+              transition={{ type: "spring", stiffness: 300, damping: 25, mass: 0.5, delay: i * 0.03 }}
               key={expense.id} 
               className="flex flex-col p-4 bg-white rounded-2xl shadow-[0_2px_10px_rgba(62,39,35,0.04)] hover:shadow-[0_4px_16px_rgba(62,39,35,0.06)] relative transition-shadow duration-200"
             >
@@ -114,9 +115,21 @@ export default function ExpenseList({ expenses, lastAddedId, onUndo, onDeleteExp
                     />
                   </div>
                   <div className="flex justify-end gap-2 mt-1">
-                    <button onClick={() => setEditingId(null)} className="p-1.5 text-rk-brown/40 hover:bg-rk-brown/5 rounded-md"><X className="w-4 h-4" /></button>
-                    <button onClick={() => handleSaveEdit(expense.id)} className="p-1.5 text-rk-green hover:bg-rk-green/10 rounded-md"><Check className="w-4 h-4" /></button>
+                    <button onClick={() => setEditingId(null)} className="cursor-pointer p-1.5 text-rk-brown/40 hover:bg-rk-brown/5 rounded-md"><X className="w-4 h-4" /></button>
+                    <button onClick={() => handleSaveEdit(expense.id)} className="cursor-pointer p-1.5 text-rk-green hover:bg-rk-green/10 rounded-md"><Check className="w-4 h-4" /></button>
                   </div>
+                </div>
+              ) : confirmDeleteId === expense.id ? (
+                <div className="flex flex-col items-center justify-center gap-3 py-3">
+                   <p className="text-sm font-medium text-rk-brown/80 mb-2">Yakin mau hapus pengeluaran ini?</p>
+                   <div className="flex items-center gap-3 w-full">
+                     <button onClick={() => setConfirmDeleteId(null)} className="cursor-pointer flex-1 py-2 rounded-xl text-xs font-semibold text-rk-brown/60 hover:bg-rk-brown/5 border border-rk-brown/10 transition-colors">
+                       Batal
+                     </button>
+                     <button onClick={() => { setConfirmDeleteId(null); onDeleteExpense && onDeleteExpense(expense.id); }} className="cursor-pointer flex-1 py-2 rounded-xl text-xs font-semibold text-white bg-rk-red hover:bg-rk-red/90 shadow-sm transition-colors">
+                       Ya, Hapus
+                     </button>
+                   </div>
                 </div>
               ) : (
                 <div className="flex items-center justify-between">
@@ -138,7 +151,7 @@ export default function ExpenseList({ expenses, lastAddedId, onUndo, onDeleteExp
                     {lastAddedId === expense.id && onUndo ? (
                       <button 
                         onClick={onUndo}
-                        className="flex items-center gap-1 text-[10px] font-medium text-rk-amber mt-1 bg-rk-amber/10 px-2 py-0.5 rounded-full hover:bg-rk-amber/20 transition-colors"
+                        className="cursor-pointer flex items-center gap-1 text-[10px] font-medium text-rk-amber mt-1 bg-rk-amber/10 px-2 py-0.5 rounded-full hover:bg-rk-amber/20 transition-colors"
                       >
                         <RotateCcw className="w-3 h-3" /> Batalkan
                       </button>
@@ -152,12 +165,12 @@ export default function ExpenseList({ expenses, lastAddedId, onUndo, onDeleteExp
               )}
               
               {/* Actions row: reveal slightly on hover or click */}
-              {editingId !== expense.id && (
+              {editingId !== expense.id && confirmDeleteId !== expense.id && (
                 <div className="flex justify-end gap-3 mt-3 border-t border-rk-brown/5 pt-3">
-                   <button onClick={() => handleEditClick(expense)} className="text-[11px] font-medium flex items-center gap-1 text-rk-brown/50 hover:text-rk-gold transition-colors">
+                   <button onClick={() => handleEditClick(expense)} className="cursor-pointer text-[11px] font-medium flex items-center gap-1 text-rk-brown/50 hover:text-rk-gold transition-colors">
                      <Edit2 className="w-3 h-3" /> Edit
                    </button>
-                   <button onClick={() => onDeleteExpense && window.confirm('Beneran mau hapus pengeluaran ini?') && onDeleteExpense(expense.id)} className="text-[11px] font-medium flex items-center gap-1 text-rk-brown/50 hover:text-rk-red transition-colors">
+                   <button onClick={() => setConfirmDeleteId(expense.id)} className="cursor-pointer text-[11px] font-medium flex items-center gap-1 text-rk-brown/50 hover:text-rk-red transition-colors">
                      <Trash2 className="w-3 h-3" /> Hapus
                    </button>
                 </div>

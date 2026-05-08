@@ -1,0 +1,147 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) { 
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); 
+    }
+    
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    function isSignedIn() { return request.auth != null; }
+    function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['name', 'email', 'monthlyBudget', 'createdAt', 'updatedAt']) 
+             && data.name is string && data.name.size() <= 100
+             && data.email is string && data.email.size() <= 150
+             && data.monthlyBudget is number
+             && data.createdAt == request.time
+             && data.updatedAt == request.time
+             && (!('badges' in data) || (data.badges is list && data.badges.size() <= 50))
+             && (!('latestSummary' in data) || data.latestSummary == null || data.latestSummary is map)
+             && (!('latestRecurring' in data) || data.latestRecurring == null || data.latestRecurring is map)
+             && (!('savedSummaries' in data) || data.savedSummaries == null || (data.savedSummaries is list && data.savedSummaries.size() <= 20))
+             && (!('savedRecurring' in data) || data.savedRecurring == null || (data.savedRecurring is list && data.savedRecurring.size() <= 20));
+    }
+
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if false; // No blanket reads
+
+      allow create: if isOwner(userId) 
+                    && isValidId(userId)
+                    && isValidUser(incoming())
+                    && incoming().keys().size() >= 5
+                    && incoming().keys().size() <= 10;
+
+      allow update: if isOwner(userId) 
+                    && incoming().diff(existing()).affectedKeys().hasOnly(['name', 'monthlyBudget', 'badges', 'latestSummary', 'latestRecurring', 'savedSummaries', 'savedRecurring', 'updatedAt'])
+                    && incoming().updatedAt == request.time
+                    && (!('name' in incoming().diff(existing()).affectedKeys()) || (incoming().name is string && incoming().name.size() <= 100))
+                    && (!('monthlyBudget' in incoming().diff(existing()).affectedKeys()) || incoming().monthlyBudget is number)
+                    && (!('badges' in incoming().diff(existing()).affectedKeys()) || (incoming().badges is list && incoming().badges.size() <= 50))
+                    && (!('latestSummary' in incoming().diff(existing()).affectedKeys()) || incoming().latestSummary == null || incoming().latestSummary is map)
+                    && (!('latestRecurring' in incoming().diff(existing()).affectedKeys()) || incoming().latestRecurring == null || incoming().latestRecurring is map)
+                    && (!('savedSummaries' in incoming().diff(existing()).affectedKeys()) || incoming().savedSummaries == null || (incoming().savedSummaries is list && incoming().savedSummaries.size() <= 20))
+                    && (!('savedRecurring' in incoming().diff(existing()).affectedKeys()) || incoming().savedRecurring == null || (incoming().savedRecurring is list && incoming().savedRecurring.size() <= 20));
+    }
+
+    function isValidExpense(data, userId) {
+      return data.keys().hasAll(['userId', 'amount', 'text', 'category', 'date', 'createdAt'])
+             && data.userId == userId
+             && data.amount is number
+             && data.text is string && data.text.size() <= 200
+             && data.category is string && data.category.size() <= 100
+             && data.date is string && data.date.size() <= 50
+             && data.createdAt == request.time
+             && (!('mood' in data) || (data.mood is string && data.mood.size() <= 20))
+             && (!('splitBillId' in data) || (data.splitBillId is string && data.splitBillId.size() <= 128));
+    }
+
+    match /users/{userId}/expenses/{expenseId} {
+      allow get: if isOwner(userId) && isValidId(userId) && isValidId(expenseId);
+      allow list: if isOwner(userId); // Subcollection, protected by path
+      
+      allow create: if isOwner(userId) && isValidId(userId) && isValidId(expenseId)
+                    && isValidExpense(incoming(), userId)
+                    && incoming().keys().size() >= 6 && incoming().keys().size() <= 8;
+
+      allow update: if isOwner(userId) && isValidId(userId) && isValidId(expenseId)
+                    // You can only update mood or text/amount if needed. Let's allow specific fields.
+                    && incoming().diff(existing()).affectedKeys().hasOnly(['text', 'amount', 'category', 'mood'])
+                    && (!('text' in incoming().diff(existing()).affectedKeys()) || (incoming().text is string && incoming().text.size() <= 200))
+                    && (!('amount' in incoming().diff(existing()).affectedKeys()) || incoming().amount is number)
+                    && (!('category' in incoming().diff(existing()).affectedKeys()) || (incoming().category is string && incoming().category.size() <= 100))
+                    && (!('mood' in incoming().diff(existing()).affectedKeys()) || (incoming().mood is string && incoming().mood.size() <= 20));
+
+      allow delete: if isOwner(userId) && isValidId(userId) && isValidId(expenseId);
+    }
+
+    function isValidSplitBillItem(item) {
+      return item.keys().hasAll(['name', 'amount', 'paid'])
+             && item.name is string && item.name.size() <= 100
+             && item.amount is number
+             && item.paid is bool;
+    }
+
+    function isValidSplitBill(data, userId) {
+      return data.keys().hasAll(['userId', 'text', 'originalAmount', 'date', 'friends', 'createdAt'])
+             && data.userId == userId
+             && data.text is string && data.text.size() <= 200
+             && data.originalAmount is number
+             && data.date is string && data.date.size() <= 50
+             && data.friends is list && data.friends.size() <= 30
+             && (data.friends.size() == 0 || isValidSplitBillItem(data.friends[0]))
+             && data.createdAt == request.time;
+    }
+
+    match /users/{userId}/splitBills/{splitBillId} {
+      allow get: if isOwner(userId) && isValidId(userId) && isValidId(splitBillId);
+      allow list: if isOwner(userId); 
+      
+      allow create: if isOwner(userId) && isValidId(userId) && isValidId(splitBillId)
+                    && isValidSplitBill(incoming(), userId)
+                    && incoming().keys().size() == 6;
+
+      allow update: if isOwner(userId) && isValidId(userId) && isValidId(splitBillId)
+                    && incoming().diff(existing()).affectedKeys().hasOnly(['friends'])
+                    && incoming().friends is list && incoming().friends.size() <= 30
+                    && (incoming().friends.size() == 0 || isValidSplitBillItem(incoming().friends[0]));
+
+      allow delete: if isOwner(userId) && isValidId(userId) && isValidId(splitBillId);
+    }
+
+    function isValidChallenge(data, userId) {
+      return data.keys().hasAll(['userId', 'text', 'dateAssigned', 'completed', 'targetAmount', 'progressAmount', 'createdAt'])
+             && data.userId == userId
+             && data.text is string && data.text.size() <= 500
+             && data.dateAssigned is string && data.dateAssigned.size() <= 50
+             && data.completed is bool
+             && data.targetAmount is number
+             && data.progressAmount is number
+             && data.createdAt == request.time;
+    }
+
+    match /users/{userId}/savingsChallenges/{challengeId} {
+      allow get: if isOwner(userId) && isValidId(userId) && isValidId(challengeId);
+      allow list: if isOwner(userId);
+      
+      allow create: if isOwner(userId) && isValidId(userId) && isValidId(challengeId)
+                    && isValidChallenge(incoming(), userId)
+                    && incoming().keys().size() == 7;
+
+      allow update: if isOwner(userId) && isValidId(userId) && isValidId(challengeId)
+                    && incoming().diff(existing()).affectedKeys().hasOnly(['completed', 'progressAmount'])
+                    && (!('completed' in incoming().diff(existing()).affectedKeys()) || incoming().completed is bool)
+                    && (!('progressAmount' in incoming().diff(existing()).affectedKeys()) || incoming().progressAmount is number);
+                    
+      allow delete: if isOwner(userId) && isValidId(userId) && isValidId(challengeId);
+    }
+  }
+}

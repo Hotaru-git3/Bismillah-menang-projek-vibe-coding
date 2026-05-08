@@ -1,9 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, ChangeEvent } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { addExpense, Expense, getSplitBills, saveSplitBills } from '../utils/storage';
-import { parseExpenseText } from '../services/geminiService';
-import { CheckCircle2, RotateCw, X, Mic, Users } from 'lucide-react';
-import { sanitizeInput } from '../utils/helpers';
+import { Expense } from '../utils/storage';
+import { addSplitBillToFirestore } from '../utils/firebaseUtils';
+import { parseExpenseText, parseReceiptImage } from '../services/geminiService';
+import { CheckCircle2, RotateCw, X, Mic, Users, Camera } from 'lucide-react';
+import { sanitizeInput, isPromptInjection } from '../utils/helpers';
 
 interface InputBarProps {
   onExpenseAdded: (expense: Expense) => void;
@@ -15,6 +16,7 @@ export default function InputBar({ onExpenseAdded, onSetMood }: InputBarProps) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isError, setIsError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const [nudge, setNudge] = useState('');
   const [lastExpenseId, setLastExpenseId] = useState<string | null>(null);
   
@@ -56,13 +58,72 @@ export default function InputBar({ onExpenseAdded, onSetMood }: InputBarProps) {
     }
   };
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsProcessing(true);
+    setIsError(false);
+    setErrorMessage('');
+    setNudge('');
+    
+    try {
+      const reader = new FileReader();
+      const base64Promise = new Promise<{ base64: string, mime: string }>((resolve, reject) => {
+        reader.onload = () => {
+           let encoded = reader.result as string;
+           const prefix = `data:${file.type};base64,`;
+           if (encoded.startsWith(prefix)) {
+             encoded = encoded.substring(prefix.length);
+           }
+           resolve({ base64: encoded, mime: file.type });
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      const { base64, mime } = await base64Promise;
+      const resultText = await parseReceiptImage(base64, mime);
+      
+      if (resultText && !resultText.toLowerCase().includes('gagal')) {
+         setInput(resultText);
+      } else {
+         throw new Error("Gagal baca struk");
+      }
+    } catch (err: any) {
+      console.error(err);
+      setIsError(true);
+      if (err.message?.includes('Rate limit')) {
+        setErrorMessage("Pelan-pelan bro, AI-nya lagi napas dulu 😅");
+      } else {
+        setErrorMessage("Gagal baca struk, coba foto ulang ya.");
+      }
+    } finally {
+      setIsProcessing(false);
+      // reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
   const handleSubmit = async (e?: { preventDefault: () => void }) => {
     if (e) e.preventDefault();
     if (!input.trim() || isProcessing) return;
 
     const sanitized = sanitizeInput(input);
+    
+    if (isPromptInjection(sanitized)) {
+      setIsError(true);
+      setErrorMessage("Input tidak valid. Coba lagi dengan format pengeluaran normal ya!");
+      return;
+    }
+
     setIsProcessing(true);
     setIsError(false);
+    setErrorMessage('');
     setNudge('');
     setLastExpenseId(null);
 
@@ -70,15 +131,17 @@ export default function InputBar({ onExpenseAdded, onSetMood }: InputBarProps) {
       const promptText = isSplitBill ? `${sanitized} (jangan lupa, ini split bill, perhitungkan biaya buat gue aja, atau nanya mau bagi berapa orang, set splitBill fields)` : sanitized;
       const result = await parseExpenseText(promptText);
       
+      if (result.amount < 1 || result.amount > 100000000) {
+        throw new Error("AMOUNT_OUT_OF_RANGE");
+      }
+      
       let splitBillId = undefined;
       
       if (result.splitBill) {
-         const bills = getSplitBills();
          splitBillId = Math.random().toString(36).substring(2, 9);
-         
          const fractionAmount = Math.round((result.splitBill.totalAmount - result.splitBill.myShare) / Math.max(1, result.splitBill.friendNames.length));
          
-         bills.unshift({
+         await addSplitBillToFirestore({
            id: splitBillId,
            text: result.text,
            date: new Date().toISOString(),
@@ -89,15 +152,16 @@ export default function InputBar({ onExpenseAdded, onSetMood }: InputBarProps) {
              paid: false
            }))
          });
-         saveSplitBills(bills);
       }
 
-      const newExp = addExpense({
+      const newExp: Expense = {
+        id: Math.random().toString(36).substring(2, 9),
+        date: new Date().toISOString(),
         amount: result.amount,
         text: result.text,
-        category: result.category,
+        category: result.category as any,
         splitBillId
-      });
+      };
       setNudge(result.nudge);
       setLastExpenseId(newExp.id);
       
@@ -112,10 +176,17 @@ export default function InputBar({ onExpenseAdded, onSetMood }: InputBarProps) {
       
       onExpenseAdded(newExp);
 
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
       setIsProcessing(false);
       setIsError(true);
+      if (err.message === "AMOUNT_OUT_OF_RANGE") {
+        setErrorMessage("Nominalnya nggak masuk akal bro. Pastiin antara Rp1 s/d Rp100.000.000 ya.");
+      } else if (err.message?.includes('Rate limit')) {
+        setErrorMessage("Pelan-pelan bro, AI-nya lagi napas dulu 😅");
+      } else {
+        setErrorMessage("AI-nya lagi sibuk, coba lagi sebentar ya 🙏");
+      }
     }
   };
 
@@ -134,7 +205,7 @@ export default function InputBar({ onExpenseAdded, onSetMood }: InputBarProps) {
           <button 
             type="button" 
             onClick={() => setIsSplitBill(!isSplitBill)}
-            className={`flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded-full transition-colors ${isSplitBill ? 'bg-rk-gold text-white' : 'bg-rk-brown/5 text-rk-brown/50 hover:bg-rk-brown/10'}`}
+            className={`cursor-pointer flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded-full transition-colors ${isSplitBill ? 'bg-rk-gold text-white' : 'bg-rk-brown/5 text-rk-brown/50 hover:bg-rk-brown/10'}`}
           >
             <Users className="w-3.5 h-3.5" /> Split Bill?
           </button>
@@ -147,15 +218,34 @@ export default function InputBar({ onExpenseAdded, onSetMood }: InputBarProps) {
             onChange={(e) => setInput(e.target.value)}
             disabled={isProcessing || isSuccess}
             placeholder={isSplitBill ? "Ketik: 'nasi goreng 60rb bagi 3'" : "Ketik: 'nasi goreng 15rb'"}
-            className="w-full bg-transparent pl-5 pr-24 py-4 text-rk-brown placeholder-rk-brown/40 focus:outline-none text-sm md:text-base"
-            maxLength={500}
+            className="w-full bg-transparent pl-5 pr-32 py-4 text-rk-brown placeholder-rk-brown/40 focus:outline-none text-sm md:text-base"
+            maxLength={200}
+          />
+          <input 
+            type="file" 
+            accept="image/*" 
+            capture="environment" 
+            ref={fileInputRef} 
+            onChange={handleFileChange} 
+            className="hidden" 
           />
           <div className="absolute right-2 flex items-center gap-1">
+            {!input && !isProcessing && !isSuccess && (
+              <button 
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="cursor-pointer p-2 rounded-full transition-all text-rk-brown/40 hover:bg-rk-brown/5"
+                title="Scan Struk"
+              >
+                <Camera className="w-5 h-5" />
+              </button>
+            )}
+            
             {recognitionRef.current && !input && !isProcessing && !isSuccess && (
               <button 
                 type="button"
                 onClick={toggleListen}
-                className={`p-2 rounded-full transition-all ${isListening ? 'bg-rk-gold text-white animate-pulse' : 'text-rk-brown/40 hover:bg-rk-brown/5'}`}
+                className={`cursor-pointer p-2 rounded-full transition-all ${isListening ? 'bg-rk-gold text-white animate-pulse' : 'text-rk-brown/40 hover:bg-rk-brown/5'}`}
               >
                 <Mic className="w-5 h-5" />
               </button>
@@ -195,12 +285,18 @@ export default function InputBar({ onExpenseAdded, onSetMood }: InputBarProps) {
             </AnimatePresence>
             
             {(!isProcessing && !isSuccess && input) && (
-               <button type="submit" className="bg-rk-brown text-rk-cream px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-rk-brown-light active:scale-95 transition-transform mr-1">
+               <button type="submit" className="cursor-pointer bg-rk-brown text-rk-cream px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-rk-brown-light active:scale-95 transition-transform mr-1">
                  Catat
                </button>
             )}
           </div>
         </div>
+        
+        {input.length >= 150 && (
+          <div className="absolute right-2 px-2 pb-1 mt-1 text-[10px] text-rk-brown/50">
+            {input.length}/200
+          </div>
+        )}
         
         <AnimatePresence>
           {isSuccess && nudge && (
@@ -221,7 +317,7 @@ export default function InputBar({ onExpenseAdded, onSetMood }: InputBarProps) {
                     <button
                       key={emoji}
                       onClick={(e) => { e.preventDefault(); handleMoodSelect(emoji); }}
-                      className="text-2xl hover:scale-125 transition-transform active:scale-95"
+                      className="cursor-pointer text-2xl hover:scale-125 transition-transform active:scale-95"
                     >
                       {emoji}
                     </button>
@@ -236,15 +332,18 @@ export default function InputBar({ onExpenseAdded, onSetMood }: InputBarProps) {
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              className="mt-3 flex items-center gap-2 text-sm text-rk-red"
+              className="mt-3 flex items-center gap-2 text-sm text-rk-red bg-rk-red/5 p-3 rounded-xl border border-rk-red/10"
             >
-              <span>Waduh, gagal nyatet nih. Coba lagi ya bro.</span>
+              <div className="flex-1">
+                <span>{errorMessage || "Waduh, gagal nyatet nih. Coba lagi ya."}</span>
+              </div>
               <button 
                 type="button" 
                 onClick={() => handleSubmit()} 
-                className="bg-rk-red/10 px-2 py-1 rounded-md active:bg-rk-red/20 inline-flex items-center"
+                className="cursor-pointer bg-rk-red/10 px-3 py-1.5 rounded-lg active:bg-rk-red/20 inline-flex items-center text-xs font-semibold hover:bg-rk-red/20 transition-colors"
+                disabled={isProcessing}
               >
-                <RotateCw className="w-3 h-3 mr-1"/> Ulang
+                <RotateCw className="w-3.5 h-3.5 mr-1.5"/> Ulang
               </button>
             </motion.div>
           )}

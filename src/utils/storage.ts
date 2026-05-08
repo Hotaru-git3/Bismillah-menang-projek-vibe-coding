@@ -11,9 +11,35 @@ export interface UserProfile {
   monthlyBudget: number;
   concern: string;
   badges?: string[];
+  latestSummary?: {
+    summary: string;
+    topCategories: string[];
+    tip: string;
+    generatedAt: string;
+  };
+  latestRecurring?: {
+    detected: boolean;
+    text: string;
+    projection6Months: number;
+    generatedAt: string;
+  };
+  savedSummaries?: {
+    id: string;
+    summary: string;
+    topCategories: string[];
+    tip: string;
+    generatedAt: string;
+  }[];
+  savedRecurring?: {
+    id: string;
+    detected: boolean;
+    text: string;
+    projection6Months: number;
+    generatedAt: string;
+  }[];
 }
 
-export type ExpenseCategory = 'Kebutuhan' | 'Investasi' | 'Keinginan';
+export type ExpenseCategory = 'Makanan' | 'Transport' | 'Belanja' | 'Hiburan' | 'Lainnya' | 'Kebutuhan' | 'Investasi' | 'Keinginan';
 
 export interface Expense {
   id: string;

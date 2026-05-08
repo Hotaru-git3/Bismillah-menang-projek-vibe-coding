@@ -23,5 +23,15 @@ export function calculateRunway(budget: number, spent: number, daysInMonth: numb
 }
 
 export function sanitizeInput(input: string): string {
-  return input.replace(/<\/?[^>]+(>|$)/g, "");
+  // Strip HTML/script tags
+  const noTags = input.replace(/<\/?[^>]+(>|$)/g, "");
+  // Escape a few common potentially unsafe characters if needed, or just let Gemini handle
+  // but let's remove extreme special characters except basic punctuation
+  return noTags.replace(/[<>]/g, "");
+}
+
+export function isPromptInjection(input: string): boolean {
+  const lower = input.toLowerCase();
+  const keywords = ["ignore previous", "you are now", "forget", "act as", "jailbreak", "abaikan", "kamu sekarang", "jadilah"];
+  return keywords.some(kw => lower.includes(kw));
 }

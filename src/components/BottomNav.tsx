@@ -22,7 +22,7 @@ export default function BottomNav({ activeTab, onChange }: BottomNavProps) {
             <button
               key={t.id}
               onClick={() => onChange(t.id)}
-              className="flex flex-col items-center justify-center w-14 h-14 relative"
+              className="cursor-pointer flex flex-col items-center justify-center w-14 h-14 relative"
             >
               <t.icon 
                 strokeWidth={isActive ? 2.5 : 2} 
@@ -31,9 +31,6 @@ export default function BottomNav({ activeTab, onChange }: BottomNavProps) {
               <span className={`text-[10px] font-medium transition-colors ${isActive ? 'text-rk-brown' : 'text-rk-brown/40'}`}>
                 {t.label}
               </span>
-              {isActive && (
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full shadow-[0_0_15px_rgba(200,164,92,0.3)] pointer-events-none" />
-              )}
             </button>
           );
         })}

@@ -1,0 +1,92 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile data",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "monthlyBudget": { "type": "number" },
+        "badges": { "type": "array", "items": { "type": "string" } },
+        "createdAt": { "type": "number", "description": "Server timestamp" },
+        "updatedAt": { "type": "number", "description": "Server timestamp" }
+      },
+      "required": ["name", "email", "monthlyBudget", "createdAt", "updatedAt"]
+    },
+    "Expense": {
+      "title": "Expense",
+      "description": "An expense item",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "amount": { "type": "number" },
+        "text": { "type": "string" },
+        "category": { "type": "string" },
+        "date": { "type": "string" },
+        "mood": { "type": "string" },
+        "splitBillId": { "type": "string" },
+        "createdAt": { "type": "number", "description": "Server timestamp" }
+      },
+      "required": ["userId", "amount", "text", "category", "date", "createdAt"]
+    },
+    "SplitBill": {
+      "title": "SplitBill",
+      "description": "A split bill item",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "text": { "type": "string" },
+        "originalAmount": { "type": "number" },
+        "date": { "type": "string" },
+        "friends": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "amount": { "type": "number" },
+              "paid": { "type": "boolean" }
+            },
+            "required": ["name", "amount", "paid"]
+          }
+        },
+        "createdAt": { "type": "number", "description": "Server timestamp" }
+      },
+      "required": ["userId", "text", "originalAmount", "date", "friends", "createdAt"]
+    },
+    "SavingsChallenge": {
+      "title": "SavingsChallenge",
+      "description": "A savings challenge item",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "text": { "type": "string" },
+        "dateAssigned": { "type": "string" },
+        "completed": { "type": "boolean" },
+        "targetAmount": { "type": "number" },
+        "progressAmount": { "type": "number" },
+        "createdAt": { "type": "number", "description": "Server timestamp" }
+      },
+      "required": ["userId", "text", "dateAssigned", "completed", "targetAmount", "progressAmount", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "User profile data"
+    },
+    "/users/{userId}/expenses/{expenseId}": {
+      "schema": { "$ref": "#/entities/Expense" },
+      "description": "User expenses"
+    },
+    "/users/{userId}/splitBills/{splitBillId}": {
+      "schema": { "$ref": "#/entities/SplitBill" },
+      "description": "User split bills"
+    },
+    "/users/{userId}/savingsChallenges/{challengeId}": {
+      "schema": { "$ref": "#/entities/SavingsChallenge" },
+      "description": "User savings challenges"
+    }
+  }
+}

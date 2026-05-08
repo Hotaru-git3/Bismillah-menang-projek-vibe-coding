@@ -110,7 +110,7 @@ export default function DashboardCard({ expenses, monthlyBudget }: DashboardProp
              initial={{ width: 0 }}
              animate={{ width: `${Math.min(100, Math.max(0, (runway / daysInMonth) * 100))}%` }}
              transition={{ duration: 1, ease: 'easeOut' }}
-             className="h-full bg-rk-gold-dark rounded-full"
+             className={`h-full rounded-full ${(runway / daysInMonth) > 0.5 ? 'bg-rk-green' : (runway / daysInMonth) > 0.2 ? 'bg-rk-gold-dark' : 'bg-rk-red'}`}
            />
         </div>
       </div>
