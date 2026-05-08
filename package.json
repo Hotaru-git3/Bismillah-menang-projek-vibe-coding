@@ -4,7 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"vite --host 0.0.0.0 --port 3000\" \"tsx api/local-server.ts\"",
+    "dev": "tsx server.ts",
+    "start": "node --experimental-strip-types server.ts",
     "build": "vite build",
     "preview": "vite preview",
     "clean": "rm -rf dist",

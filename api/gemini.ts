@@ -30,6 +30,7 @@ function sanitizeInput(text: string): string {
 }
 
 export default async function handler(req: VercelRequest | any, res: VercelResponse | any) {
+  console.log("GEMINI_API_KEY in gemini.ts is:", apiKey ? apiKey.substring(0, 10) + "..." : "EMPTY");
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
@@ -293,9 +294,7 @@ export default async function handler(req: VercelRequest | any, res: VercelRespo
   } catch (e: any) {
     console.error("Vercel API Error:", e);
     return res.status(500).json({ 
-      error: e.message && (e.message.includes("Pelan-pelan bro") || e.message.includes("Input tidak valid")) 
-        ? e.message 
-        : "AI-nya lagi sibuk, coba lagi sebentar ya \uD83D\uDE4F" 
+      error: e && e.message ? e.message : String(e)
     });
   }
 }
