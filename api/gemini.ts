@@ -1,7 +1,9 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-const MODEL = "gemini-3.0-flash";
+const apiKey = process.env.GEMINI_API_KEY || "";
+const ai = new GoogleGenAI({ apiKey });
+const MODEL = "gemini-3-flash-preview";
 
 function sanitizeInput(text: string): string {
     if (!text) return "";
@@ -17,17 +19,12 @@ function sanitizeInput(text: string): string {
 }
 
 export default async function handler(req: VercelRequest | any, res: VercelResponse | any) {
+  console.log("GEMINI_API_KEY in gemini.ts is:", apiKey ? apiKey.substring(0, 10) + "..." : "EMPTY");
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
   try {
-    const apiKey = process.env.GEMINI_API_KEY?.trim() || "";
-    if (!apiKey || apiKey.includes("MY_GE") || (!apiKey.startsWith("AI") && apiKey.length < 30)) {
-        return res.status(401).json({ error: "Waduh, fitur AI-nya belum jalan nih karena API Key kosong (atau salah). Masukin API key Gemini yang valid di menu 'Secrets' AI Studio terus restart servernya ya! 🙏" });
-    }
-    const ai = new GoogleGenAI({ apiKey });
-    
     const { action, payload } = req.body;
 
     if (action === "parseReceiptImage") {

@@ -37,9 +37,9 @@ export default function ProfileDropdown({ onNavigate, onOpenProfile }: { onNavig
     >
       <div 
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1.5 focus:outline-none cursor-pointer group active:opacity-80 rounded-full select-none"
+        className="flex items-center gap-1.5 focus:outline-none cursor-pointer group"
       >
-        <div className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-rk-gold text-white flex items-center justify-center font-semibold text-sm shadow-sm border-2 border-white group-hover:scale-105 active:scale-95 transition-all">
+        <div className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-rk-gold text-white flex items-center justify-center font-semibold text-sm shadow-sm border-2 border-white group-hover:scale-105 transition-transform">
           {initials}
         </div>
         <ChevronDown className={`w-4 h-4 text-rk-brown/70 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
