@@ -29,7 +29,6 @@ async function startServer() {
   // API endpoint for Gemini operations
   app.post("/api", async (req, res) => {
     try {
-        checkRateLimit();
         const action = req.body.action;
         const data = req.body.data;
 
