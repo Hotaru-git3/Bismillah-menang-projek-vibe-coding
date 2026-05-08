@@ -20,6 +20,11 @@ function sanitizeInput(text: string): string {
 
 export default async function handler(req: VercelRequest | any, res: VercelResponse | any) {
   console.log("GEMINI_API_KEY in gemini.ts is:", apiKey ? apiKey.substring(0, 10) + "..." : "EMPTY");
+  
+  if (!apiKey) {
+    return res.status(500).json({ error: "Server Configuration Error: GEMINI_API_KEY environment variable is missing on the server. Please add it to your hosting provider settings (e.g., Vercel Environment Variables)." });
+  }
+
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
