@@ -1,7 +1,24 @@
 import { getApps, initializeApp } from 'firebase/app';
 import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from 'firebase/auth';
 import { getFirestore, doc, getDocFromServer } from 'firebase/firestore';
-import firebaseConfig from '../../firebase-applet-config.json';
+
+// 🔥 AMBIL DARI ENVIRONMENT VARIABLES (FALLBACK KE OLD VALUES KALAU DEV)
+const firebaseConfig = {
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || 'AIzaSyD0j6DCUBPM6HYIcdIBDm6lGtVidrXNugk',
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || 'vibe-code-project-495517.firebaseapp.com',
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || 'vibe-code-project-495517',
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || 'vibe-code-project-495517.firebasestorage.app',
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '738721027160',
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || '1:738721027160:web:937cd4988757add0cda62d',
+  firestoreDatabaseId: import.meta.env.VITE_FIREBASE_DATABASE_ID || 'ai-studio-c84db11d-bf3d-48b8-b333-bc17be78d807',
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || ''
+};
+
+// 🛡️ VALIDASI: Jangan sampe API Key kosong
+if (!firebaseConfig.apiKey) {
+  console.error('❌ VITE_FIREBASE_API_KEY tidak ditemukan!');
+  console.error(' Set di Vercel Dashboard: Settings > Environment Variables');
+}
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApps()[0];
 export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId); 
