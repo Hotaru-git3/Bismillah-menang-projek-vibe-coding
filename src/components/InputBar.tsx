@@ -137,6 +137,9 @@ export default function InputBar({ onExpenseAdded, onSetMood }: InputBarProps) {
          splitBillId = Math.random().toString(36).substring(2, 9);
          const fractionAmount = Math.round((result.splitBill.totalAmount - result.splitBill.myShare) / Math.max(1, result.splitBill.friendNames.length));
          
+         // Pastikan secara eksplisit amount di-override jadi myShare, buat jaga-jaga API gagal meng-override
+         result.amount = result.splitBill.myShare;
+         
          await addSplitBillToFirestore({
            id: splitBillId,
            text: result.text,

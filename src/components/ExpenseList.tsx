@@ -180,7 +180,14 @@ export default function ExpenseList({ expenses, lastAddedId, onUndo, onDeleteExp
                        )}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="font-medium text-rk-brown text-[15px] truncate">{expense.text}</p>
+                      <div className="flex items-center gap-2">
+                         <p className="font-medium text-rk-brown text-[15px] truncate">{expense.text}</p>
+                         {expense.splitBillId && (
+                           <span className="text-[9px] bg-rk-gold text-white px-1.5 py-0.5 rounded-sm font-semibold tracking-wide uppercase shrink-0">
+                             Patungan
+                           </span>
+                         )}
+                      </div>
                       <p className="text-xs text-rk-brown/60 mt-0.5 truncate">{expense.category}</p>
                     </div>
                   </div>
