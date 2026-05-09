@@ -31,7 +31,8 @@ export function sanitizeInput(input: string): string {
 }
 
 export function isPromptInjection(input: string): boolean {
-  const lower = input.toLowerCase();
+  if (!input) return false;
+  const lower = String(input).toLowerCase();
   const keywords = ["ignore previous", "you are now", "forget", "act as", "jailbreak", "abaikan", "kamu sekarang", "jadilah"];
   return keywords.some(kw => lower.includes(kw));
 }

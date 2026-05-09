@@ -56,17 +56,19 @@ export default function RoastCard({ expenses, onShowToast }: Props) {
     );
   }
 
+  const auraStr = (roastData.aura || '').toLowerCase();
+  
   return (
     <motion.div initial={{opacity:0, scale:0.95}} animate={{opacity:1, scale:1}} className="bg-[#111] text-white rounded-3xl p-6 md:p-8 shadow-2xl relative overflow-hidden">
       {/* Background decorative aura */}
       <div 
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] blur-[100px] rounded-full mix-blend-screen opacity-50" 
-        style={{ backgroundColor: roastData.aura.toLowerCase().includes('merah') ? '#ef4444' : roastData.aura.toLowerCase().includes('ijo') ? '#22c55e' : roastData.aura.toLowerCase().includes('biru') ? '#3b82f6' : '#a855f7' }}
+        style={{ backgroundColor: auraStr.includes('merah') ? '#ef4444' : auraStr.includes('ijo') ? '#22c55e' : auraStr.includes('biru') ? '#3b82f6' : '#a855f7' }}
       />
       <div className="relative z-10 flex flex-col items-center text-center">
          <p className="text-xs uppercase tracking-[0.2em] text-white/50 mb-2 mt-4">Aura Dompet Lo</p>
          <h2 className="text-4xl md:text-5xl font-black italic mb-8 drop-shadow-lg"
-            style={{ color: roastData.aura.toLowerCase().includes('merah') ? '#fca5a5' : roastData.aura.toLowerCase().includes('ijo') ? '#bbf7d0' : roastData.aura.toLowerCase().includes('biru') ? '#bfdbfe' : '#e9d5ff' }}
+            style={{ color: auraStr.includes('merah') ? '#fca5a5' : auraStr.includes('ijo') ? '#bbf7d0' : auraStr.includes('biru') ? '#bfdbfe' : '#e9d5ff' }}
          >
            "{roastData.aura}"
          </h2>

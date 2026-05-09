@@ -24,7 +24,7 @@ export async function parseExpenseText(rawText: string): Promise<ParsedExpense> 
     } catch (error) {
         console.warn("API Error, using fallback parser:", error);
         
-        let normalizedText = rawText.toLowerCase()
+        let normalizedText = (rawText || '').toLowerCase()
             .replace(/\b(gw|gue|aku|ana|ogut)\b/g, 'saya')
             .replace(/\b(abis|abisan|baru aja|udah|dah|wasted)\b/g, 'sudah')
             .replace(/\b(laper|lapar banget|mules)\b/g, 'lapar')

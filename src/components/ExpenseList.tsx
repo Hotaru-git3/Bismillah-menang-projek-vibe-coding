@@ -20,8 +20,8 @@ export default function ExpenseList({ expenses, lastAddedId, onUndo, onDeleteExp
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredExpenses = expenses.filter(expense => 
-    expense.text.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    expense.category.toLowerCase().includes(searchQuery.toLowerCase())
+    (expense.text || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
+    (expense.category || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   if (expenses.length === 0) {
@@ -41,8 +41,8 @@ export default function ExpenseList({ expenses, lastAddedId, onUndo, onDeleteExp
   }
 
   const getIcon = (category: string, text: string) => {
-    const lowerText = text.toLowerCase();
-    const lowerCategory = category.toLowerCase();
+    const lowerText = (text || '').toLowerCase();
+    const lowerCategory = (category || '').toLowerCase();
 
     // Text-based overrides
     if (lowerText.includes('makan') || lowerText.includes('nasi') || lowerText.includes('ayam') || lowerText.includes('kopi') || lowerText.includes('minum')) return <Utensils className="w-5 h-5 text-orange-500" />;

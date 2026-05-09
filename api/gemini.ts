@@ -1,9 +1,9 @@
 import axios from "axios";
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-const MODEL = "mistralai/mistral-large-3-675b-instruct-2512";
+const MODEL = "meta/llama-4-maverick-17b-128e-instruct";
 const invokeUrl = "https://integrate.api.nvidia.com/v1/chat/completions";
-const AUTH_TOKEN = process.env.NVIDIA_API_KEY || "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"; // WARNING: Move this to environment variables!
+const AUTH_TOKEN = process.env.NVIDIA_API_KEY || "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"; // WARNING: Move this to environment variables!
 
 function sanitizeInput(text: string): string {
     if (!text) return "";

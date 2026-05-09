@@ -87,7 +87,7 @@ export default function InputBar({ onExpenseAdded, onSetMood }: InputBarProps) {
       const { base64, mime } = await base64Promise;
       const resultText = await parseReceiptImage(base64, mime);
       
-      if (resultText && !resultText.toLowerCase().includes('gagal')) {
+      if (typeof resultText === 'string' && !resultText.toLowerCase().includes('gagal')) {
          setInput(resultText);
       } else {
          throw new Error("Gagal baca struk");
