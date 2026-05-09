@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { formatRupiah } from '../utils/helpers';
 import { Expense } from '../utils/storage';
 import { motion, AnimatePresence } from 'motion/react';
-import { Coffee, TrendingDown, ShoppingBag, RotateCcw, Edit2, Trash2, Check, X, Search } from 'lucide-react';
+import { Coffee, TrendingDown, ShoppingBag, RotateCcw, Edit2, Trash2, Check, X, Search, Car, Utensils, Mic2, Tv, CreditCard, Zap, Heart, BookOpen, GraduationCap, Plane, Home, Smartphone, HelpCircle } from 'lucide-react';
 
 interface ExpenseListProps {
   expenses: Expense[];
@@ -40,11 +40,30 @@ export default function ExpenseList({ expenses, lastAddedId, onUndo, onDeleteExp
     );
   }
 
-  const getIcon = (category: string) => {
+  const getIcon = (category: string, text: string) => {
+    const lowerText = text.toLowerCase();
+    const lowerCategory = category.toLowerCase();
+
+    // Text-based overrides
+    if (lowerText.includes('makan') || lowerText.includes('nasi') || lowerText.includes('ayam') || lowerText.includes('kopi') || lowerText.includes('minum')) return <Utensils className="w-5 h-5 text-orange-500" />;
+    if (lowerText.includes('bensin') || lowerText.includes('gojek') || lowerText.includes('grab') || lowerText.includes('parkir') || lowerText.includes('tiket') || lowerCategory.includes('transport')) return <Car className="w-5 h-5 text-blue-500" />;
+    if (lowerText.includes('konser') || lowerText.includes('musik') || lowerText.includes('nonton') || lowerText.includes('bioskop') || lowerText.includes('mic')) return <Mic2 className="w-5 h-5 text-purple-500" />;
+    if (lowerText.includes('netflix') || lowerText.includes('youtube') || lowerText.includes('spotify') || lowerText.includes('langganan') || lowerText.includes('sub')) return <Tv className="w-5 h-5 text-red-500" />;
+    if (lowerText.includes('pulsa') || lowerText.includes('kuota') || lowerText.includes('internet') || lowerText.includes('hp')) return <Smartphone className="w-5 h-5 text-cyan-500" />;
+    if (lowerText.includes('listrik') || lowerText.includes('air') || lowerText.includes('token')) return <Zap className="w-5 h-5 text-yellow-500" />;
+    if (lowerText.includes('kos') || lowerText.includes('rumah') || lowerText.includes('belanja bulanan')) return <Home className="w-5 h-5 text-emerald-500" />;
+    if (lowerText.includes('obat') || lowerText.includes('rs') || lowerText.includes('dokter') || lowerText.includes('sehat')) return <Heart className="w-5 h-5 text-rose-500" />;
+    if (lowerText.includes('buku') || lowerText.includes('kuliah') || lowerText.includes('sekolah') || lowerText.includes('kursus')) return <GraduationCap className="w-5 h-5 text-indigo-500" />;
+    if (lowerText.includes('jalan') || lowerText.includes('trip') || lowerText.includes('liburan') || lowerText.includes('pesawat')) return <Plane className="w-5 h-5 text-teal-500" />;
+
+    // Category fallbacks
     switch (category) {
       case 'Investasi': return <TrendingDown className="w-5 h-5 text-rk-gold" />;
+      case 'Makanan': return <Utensils className="w-5 h-5 text-orange-500" />;
+      case 'Transportasi': return <Car className="w-5 h-5 text-blue-500" />;
       case 'Keinginan': return <Coffee className="w-5 h-5 text-rk-red" />;
-      default: return <ShoppingBag className="w-5 h-5 text-rk-brown" />;
+      case 'Kebutuhan': return <ShoppingBag className="w-5 h-5 text-rk-brown" />;
+      default: return <HelpCircle className="w-5 h-5 text-rk-brown/40" />;
     }
   };
 
@@ -141,7 +160,7 @@ export default function ExpenseList({ expenses, lastAddedId, onUndo, onDeleteExp
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <div className="bg-rk-cream-dark p-2 rounded-xl relative">
-                       {getIcon(expense.category)}
+                       {getIcon(expense.category, expense.text)}
                        {expense.mood && (
                          <span className="absolute -bottom-1 -right-1 text-xs">{expense.mood}</span>
                        )}

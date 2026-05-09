@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useFirebase } from './FirebaseProvider';
-import { User as UserIcon, Settings, LogOut } from 'lucide-react';
+import { User as UserIcon, Settings, LogOut, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 export default function ProfileDropdown({ onNavigate, onOpenProfile }: { onNavigate: (tab: 'dashboard' | 'log' | 'insights' | 'settings') => void, onOpenProfile: () => void }) {
@@ -37,9 +37,14 @@ export default function ProfileDropdown({ onNavigate, onOpenProfile }: { onNavig
     >
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-rk-gold text-white flex items-center justify-center font-semibold text-sm shadow-sm border-2 border-white hover:scale-105 transition-transform cursor-pointer"
+        className="flex items-center gap-1.5 md:gap-2 group transition-all cursor-pointer"
       >
-        {initials}
+        <div className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-rk-gold text-white flex items-center justify-center font-semibold text-sm shadow-sm border-2 border-white group-hover:scale-105 transition-transform">
+          {initials}
+        </div>
+        <ChevronDown 
+          className={`w-4 h-4 text-rk-brown/60 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} 
+        />
       </button>
 
       <AnimatePresence>
