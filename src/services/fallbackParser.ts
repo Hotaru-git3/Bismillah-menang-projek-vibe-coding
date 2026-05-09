@@ -18,7 +18,9 @@ export function fallbackParseExpense(rawText: string): ParsedExpense {
   // 5. Deteksi split bill
   const splitBill = detectSplitBill(normalized, amount);
 
-  return { amount, category, text, nudge, ...(splitBill && { splitBill }) };
+  const finalAmount = splitBill ? splitBill.myShare : amount;
+
+  return { amount: finalAmount, category, text, nudge, ...(splitBill && { splitBill }) };
 }
 
 function detectAmount(text: string): number {
@@ -108,9 +110,11 @@ function detectSplitBill(text: string, amount: number): { totalAmount: number; m
   if (!splitMatch) return null;
 
   const totalPeople = parseInt(splitMatch[1]);
+  if (totalPeople <= 1 || isNaN(totalPeople)) return null;
+
   return {
-    totalAmount: amount * totalPeople,
-    myShare: amount,
+    totalAmount: amount,
+    myShare: Math.round(amount / totalPeople),
     friendNames: Array.from({ length: totalPeople - 1 }, (_, i) => `Teman ${i + 1}`)
   };
 }

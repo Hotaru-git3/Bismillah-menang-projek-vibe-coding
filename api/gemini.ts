@@ -102,7 +102,7 @@ export default async function handler(
               role: 'system',
               content: `Kamu parser keuangan Gen-Z Indonesia. Ekstrak input jadi JSON.
 {
-  "amount": number (dalam Rupiah),
+  "amount": number (PENTING: dalam Rupiah. Jika ada split bill, SET nominal INI HANYA sebesar porsi/bayaran si user saja, BUKAN total harga),
   "category": "Makanan & Minuman|Transportasi|Hiburan|Belanja & Fashion|Olahraga & Kebugaran|Kesehatan & Kebutuhan Pokok|Keuangan & Investasi|Pendidikan|Pulsa, Tagihan & Topup Digital|Lainnya",
   "text": "deskripsi singkat max 40 char",
   "nudge": "1 kalimat Gen-Z santai (max 10 kata)",
@@ -114,6 +114,9 @@ Rules: "rb/ribu/k"=×1000, "jt/juta/M"=×1000000. "nge-gym"=Olahraga. "laundry"=
           ]);
 
           // Validasi output Integrity check
+          if (result.splitBill && result.splitBill.myShare) {
+            result.amount = result.splitBill.myShare;
+          }
           if (!SecurityUtils.validateAmount(result.amount)) result.amount = 0;
           if (!SecurityUtils.validateCategory(result.category)) result.category = 'Lainnya';
           if (result.text) result.text = SecurityUtils.sanitizeInput(result.text).substring(0, 100);

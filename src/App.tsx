@@ -85,7 +85,7 @@ export default function App() {
          >
            <Wallet className="w-8 h-8 text-rk-brown/60" />
          </motion.div>
-         <p className="text-rk-brown/60 font-medium font-serif animate-pulse">Buka dompet lo...</p>
+         <p className="text-rk-brown/60 font-medium font-serif animate-pulse">Lagi ngebuka dompet lo...</p>
       </div>
     );
   }
