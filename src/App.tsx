@@ -147,7 +147,7 @@ export default function App() {
       {/* MAIN CONTENT AREA */}
       <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden relative">
         {/* Mobile Header */}
-        <div className="md:hidden px-5 py-5 pt-8 sticky top-0 z-20 bg-rk-cream/90 backdrop-blur-md flex justify-between items-center w-full shrink-0">
+        <div className="md:hidden px-5 py-4 pt-[calc(1rem+env(safe-area-inset-top,0px))] sticky top-0 z-20 bg-rk-cream/90 backdrop-blur-md flex justify-between items-center w-full shrink-0">
           <h1 className="text-2xl font-serif text-rk-brown">Halo, {profile.name}.</h1>
           <ProfileDropdown onNavigate={setActiveTab} onOpenProfile={() => setShowProfileModal(true)} />
         </div>

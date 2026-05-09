@@ -43,7 +43,7 @@ export default function ProfileModal({ isOpen, onClose }: { isOpen: boolean, onC
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed top-0 right-0 h-full w-[400px] max-w-[100vw] bg-white shadow-2xl z-50 flex flex-col p-6 rounded-l-3xl overflow-y-auto"
+            className="fixed top-0 right-0 h-full w-[400px] max-w-[100vw] bg-white shadow-2xl z-50 flex flex-col p-6 pt-[calc(1.5rem+env(safe-area-inset-top,0px))] rounded-l-3xl overflow-y-auto"
           >
             <div className="flex justify-between items-center mb-8">
               <h2 className="text-xl font-serif text-rk-brown font-bold">Profil Akun</h2>
