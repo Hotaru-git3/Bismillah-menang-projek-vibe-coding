@@ -4,6 +4,18 @@ import { fallbackParseExpense } from '../src/services/fallbackParser.ts';
 import { SecurityUtils } from '../src/utils/security.ts';
 import type { ParsedExpense, WeeklySummary, SavingsChallenge, RecurringExpense, MicroLesson, AuraRoast, Proyeksi } from '../src/types/api.ts';
 
+function isVercelAIError(error: any): boolean {
+  const msg = error?.message || '';
+  return [
+    'VERCEL_AI_DOWN',
+    'VERCEL_MAX_RETRIES',
+    'VERCEL_HTML_RESPONSE',
+    'VERCEL_ERROR_RESPONSE',
+    'VERCEL_NOT_JSON',
+    'VERCEL_JSON_PARSE_ERROR'
+  ].some(code => msg.includes(code));
+}
+
 const ipStore = new Map<string, { count: number, resetTime: number }>();
 
 export default async function handler(
@@ -108,11 +120,13 @@ Rules: "rb/ribu/k"=×1000, "jt/juta/M"=×1000000. "nge-gym"=Olahraga. "laundry"=
           if (result.nudge) result.nudge = SecurityUtils.sanitizeInput(result.nudge).substring(0, 100);
 
           return res.status(200).json({ result });
-        } catch (apiError) {
-          // Fallback ke local parser
-          console.warn('⚠️ AI API gagal, pake local parser');
-          const fallbackResult = fallbackParseExpense(rawText);
-          return res.status(200).json({ result: fallbackResult });
+        } catch (apiError: any) {
+          if (isVercelAIError(apiError) || apiError?.message === 'AI response bukan JSON valid') {
+            console.warn('⚠️ Vercel AI error, fallback ke local parser');
+            const fallbackResult = fallbackParseExpense(rawText);
+            return res.status(200).json({ result: fallbackResult });
+          }
+          throw apiError;
         }
       }
 
@@ -122,21 +136,34 @@ Rules: "rb/ribu/k"=×1000, "jt/juta/M"=×1000000. "nge-gym"=Olahraga. "laundry"=
           item: e.text, amount: e.amount, category: e.category, date: e.date
         })));
 
-        const result = await nvidiaClient.chatJSON<WeeklySummary>([
-          {
-            role: 'system',
-            content: `Analisis pengeluaran mingguan Gen-Z Indonesia.
+        try {
+          const result = await Promise.race([
+            nvidiaClient.chatJSON<WeeklySummary>([
+              {
+                role: 'system',
+                content: `Analisis pengeluaran mingguan Gen-Z Indonesia.
 Output JSON:
 {
   "summary": "3-4 kalimat ringkasan Bahasa Indonesia gaul",
   "topCategories": ["3 kategori terbesar"],
   "tip": "1 tips actionable"
 }`
-          },
-          { role: 'user', content: json }
-        ]);
-
-        return res.status(200).json({ result });
+              },
+              { role: 'user', content: json }
+            ]),
+            new Promise<never>((_, reject) => setTimeout(() => reject(new Error('VERCEL_TIMEOUT')), 8000))
+          ]);
+          return res.status(200).json({ result });
+        } catch (error: any) {
+          console.warn('⚠️ Vercel timeout/error:', error.message);
+          return res.status(200).json({
+            result: {
+              summary: 'Minggu ini lo lumayan hemat! Pertahankan.',
+              topCategories: ['Lainnya'],
+              tip: 'Jangan lupa nabung buat masa depan.'
+            }
+          });
+        }
       }
 
       case 'generateAuraRoast': {
@@ -145,21 +172,33 @@ Output JSON:
           item: e.text, amount: e.amount, category: e.category, mood: e.mood
         })));
 
-        const result = await nvidiaClient.chatJSON<AuraRoast>([
-          {
-            role: 'system',
-            content: `Roasting pengeluaran Gen-Z Indonesia. Pedas lucu, jangan SARA.
+        try {
+          const result = await Promise.race([
+            nvidiaClient.chatJSON<AuraRoast>([
+              {
+                role: 'system',
+                content: `Roasting pengeluaran Gen-Z Indonesia. Pedas lucu, jangan SARA.
 Output JSON:
 {
   "aura": "warna aura keuangan (Merah Menyala|Ijo Stabil|Abu-abu Suram|Kuning Optimis)",
   "characterTitle": "julukan lucu (Si Raja GoFood|Investor FOMO|Kang Kopi Senja|Sultan Palsu)",
   "roast": "2-3 kalimat roast Bahasa gaul Jakarta, akhiri tips positif"
 }`
-          },
-          { role: 'user', content: json }
-        ]);
-
-        return res.status(200).json({ result });
+              },
+              { role: 'user', content: json }
+            ]),
+            new Promise<never>((_, reject) => setTimeout(() => reject(new Error('VERCEL_TIMEOUT')), 8000))
+          ]);
+          return res.status(200).json({ result });
+        } catch (error: any) {
+          return res.status(200).json({
+            result: {
+              aura: 'Ijo Stabil',
+              characterTitle: 'Pengamat Keuangan',
+              roast: 'Lagi aman nih dompet lo, pertahankan yes!'
+            }
+          });
+        }
       }
 
       case 'generateProyeksi': {
@@ -168,10 +207,12 @@ Output JSON:
           item: e.text, amount: e.amount, category: e.category, date: e.date
         })));
 
-        const result = await nvidiaClient.chatJSON<Proyeksi>([
-          {
-            role: 'system',
-            content: `Proyeksi keuangan Gen-Z.
+        try {
+          const result = await Promise.race([
+            nvidiaClient.chatJSON<Proyeksi>([
+              {
+                role: 'system',
+                content: `Proyeksi keuangan Gen-Z.
 Output JSON:
 {
   "latteFactor": {
@@ -187,11 +228,20 @@ Output JSON:
     "encouragement": "kalimat penyemangat Gen-Z"
   }
 }`
-          },
-          { role: 'user', content: json }
-        ]);
-
-        return res.status(200).json({ result });
+              },
+              { role: 'user', content: json }
+            ]),
+            new Promise<never>((_, reject) => setTimeout(() => reject(new Error('VERCEL_TIMEOUT')), 8000))
+          ]);
+          return res.status(200).json({ result });
+        } catch (error: any) {
+          return res.status(200).json({
+            result: {
+              latteFactor: { items: [], yearlyCost: 0, equivalentText: 'Data belum cukup' },
+              investmentMachine: { currentMonthly: 0, projected1Y: 0, projected3Y: 0, projected5Y: 0, encouragement: 'Gas nabung dari sekarang!' }
+            }
+          });
+        }
       }
 
       case 'detectRecurringExpense': {
@@ -200,21 +250,29 @@ Output JSON:
           item: e.text, amount: e.amount, date: e.date
         })));
 
-        const result = await nvidiaClient.chatJSON<RecurringExpense>([
-          {
-            role: 'system',
-            content: `Deteksi pola pengeluaran berulang.
+        try {
+          const result = await Promise.race([
+            nvidiaClient.chatJSON<RecurringExpense>([
+              {
+                role: 'system',
+                content: `Deteksi pola pengeluaran berulang.
 Output JSON:
 {
   "detected": boolean,
   "text": "deskripsi pola (Bahasa Indonesia gaul)",
   "projection6Months": number
 }`
-          },
-          { role: 'user', content: json }
-        ]);
-
-        return res.status(200).json({ result });
+              },
+              { role: 'user', content: json }
+            ]),
+            new Promise<never>((_, reject) => setTimeout(() => reject(new Error('VERCEL_TIMEOUT')), 8000))
+          ]);
+          return res.status(200).json({ result });
+        } catch (error: any) {
+          return res.status(200).json({
+            result: { detected: false, text: 'AI lagi sibuk, coba lagi nanti ya', projection6Months: 0 }
+          });
+        }
       }
 
       case 'generateMicroLesson': {
@@ -223,10 +281,12 @@ Output JSON:
           item: e.text, amount: e.amount, category: e.category
         })));
 
-        const result = await nvidiaClient.chatJSON<MicroLesson>([
-          {
-            role: 'system',
-            content: `Mini-course financial literacy Gen-Z Indonesia.
+        try {
+          const result = await Promise.race([
+            nvidiaClient.chatJSON<MicroLesson>([
+              {
+                role: 'system',
+                content: `Mini-course financial literacy Gen-Z Indonesia.
 Output JSON:
 {
   "title": "judul materi",
@@ -235,11 +295,17 @@ Output JSON:
   "correctAnswer": "jawaban benar",
   "options": ["4 pilihan jawaban"]
 }`
-          },
-          { role: 'user', content: json }
-        ]);
-
-        return res.status(200).json({ result });
+              },
+              { role: 'user', content: json }
+            ]),
+            new Promise<never>((_, reject) => setTimeout(() => reject(new Error('VERCEL_TIMEOUT')), 8000))
+          ]);
+          return res.status(200).json({ result });
+        } catch (error: any) {
+          return res.status(200).json({
+            result: { title: 'Belajar Keuangan', content: 'Coba refresh atau tunggu sebentar ya.', question: '-', correctAnswer: '-', options: ["-", "-", "-", "-"] }
+          });
+        }
       }
 
       case 'generateSavingsChallenge': {
@@ -248,20 +314,28 @@ Output JSON:
           item: e.text, amount: e.amount, category: e.category
         })));
 
-        const result = await nvidiaClient.chatJSON<SavingsChallenge>([
-          {
-            role: 'system',
-            content: `Tantangan hemat mingguan Gen-Z.
+        try {
+          const result = await Promise.race([
+            nvidiaClient.chatJSON<SavingsChallenge>([
+              {
+                role: 'system',
+                content: `Tantangan hemat mingguan Gen-Z.
 Output JSON:
 {
   "text": "tantangan mingguan (Bahasa Indonesia gaul)",
   "targetAmount": number (estimasi hemat dalam Rupiah)
 }`
-          },
-          { role: 'user', content: json }
-        ]);
-
-        return res.status(200).json({ result });
+              },
+              { role: 'user', content: json }
+            ]),
+            new Promise<never>((_, reject) => setTimeout(() => reject(new Error('VERCEL_TIMEOUT')), 8000))
+          ]);
+          return res.status(200).json({ result });
+        } catch (error: any) {
+           return res.status(200).json({
+             result: { text: 'Coba hemat minggu ini ya!', targetAmount: 0 }
+           });
+        }
       }
 
       default:
