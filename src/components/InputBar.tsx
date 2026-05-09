@@ -94,12 +94,8 @@ export default function InputBar({ onExpenseAdded, onSetMood }: InputBarProps) {
       }
     } catch (err: any) {
       console.error(err);
-      setIsError(true);
-      if (err.message?.includes('Rate limit')) {
-        setErrorMessage("Pelan-pelan bro, AI-nya lagi napas dulu 😅");
-      } else {
+        setIsError(true);
         setErrorMessage("Gagal baca struk, coba foto ulang ya.");
-      }
     } finally {
       setIsProcessing(false);
       // reset file input
@@ -182,8 +178,6 @@ export default function InputBar({ onExpenseAdded, onSetMood }: InputBarProps) {
       setIsError(true);
       if (err.message === "AMOUNT_OUT_OF_RANGE") {
         setErrorMessage("Nominalnya nggak masuk akal bro. Pastiin antara Rp1 s/d Rp100.000.000 ya.");
-      } else if (err.message?.includes('Rate limit')) {
-        setErrorMessage("Pelan-pelan bro, AI-nya lagi napas dulu 😅");
       } else {
         setErrorMessage("AI-nya lagi sibuk, coba lagi sebentar ya 🙏");
       }

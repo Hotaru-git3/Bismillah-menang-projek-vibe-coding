@@ -1,20 +1,7 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-const apiKey = process.env.GEMINI_API_KEY || "";
-const ai = new GoogleGenAI({ apiKey });
-const MODEL = "gemini-3-flash-preview";
-
-let requestTimestamps: number[] = [];
-
-function checkClientRateLimit() {
-  const now = Date.now();
-  requestTimestamps = requestTimestamps.filter(t => now - t < 60000);
-  if (requestTimestamps.length >= 10) {
-    throw new Error("Pelan-pelan bro, AI-nya lagi napas dulu \uD83D\uDE05");
-  }
-  requestTimestamps.push(now);
-}
+const MODEL = "gemini-2.5-flash";
 
 function sanitizeInput(text: string): string {
     if (!text) return "";
@@ -35,7 +22,9 @@ export default async function handler(req: VercelRequest | any, res: VercelRespo
   }
 
   try {
-    checkClientRateLimit();
+    const userApiKey = "AIzaSyDXmX9j2P8oa49E03WGCbPVF6QhZI86Qas";
+    const aiKeyToUse = userApiKey || process.env.GEMINI_API_KEY;
+    const ai = new GoogleGenAI({ apiKey: aiKeyToUse });
     const { action, payload } = req.body;
 
     if (action === "parseReceiptImage") {
@@ -293,7 +282,7 @@ export default async function handler(req: VercelRequest | any, res: VercelRespo
   } catch (e: any) {
     console.error("Vercel API Error:", e);
     return res.status(500).json({ 
-      error: e.message && (e.message.includes("Pelan-pelan bro") || e.message.includes("Input tidak valid")) 
+      error: e.message && e.message.includes("Input tidak valid") 
         ? e.message 
         : "AI-nya lagi sibuk, coba lagi sebentar ya \uD83D\uDE4F" 
     });

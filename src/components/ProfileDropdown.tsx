@@ -63,20 +63,20 @@ export default function ProfileDropdown({ onNavigate, onOpenProfile }: { onNavig
             <div className="p-2">
               <button 
                 onClick={() => { setIsOpen(false); onOpenProfile(); }}
-                className="w-full text-left flex items-center gap-3 px-3 py-2.5 text-sm text-rk-brown hover:bg-rk-brown/5 rounded-xl transition-colors cursor-pointer"
+                className="w-full text-left flex items-center gap-3 px-3 py-2.5 text-sm text-rk-brown hover:bg-rk-brown/10 active:bg-rk-brown/20 rounded-xl transition-all cursor-pointer"
               >
                 <UserIcon className="w-4 h-4 text-rk-brown/60" /> Profile
               </button>
               <button 
                 onClick={() => { setIsOpen(false); onNavigate('settings'); }}
-                className="w-full text-left flex items-center gap-3 px-3 py-2.5 text-sm text-rk-brown hover:bg-rk-brown/5 rounded-xl transition-colors cursor-pointer"
+                className="w-full text-left flex items-center gap-3 px-3 py-2.5 text-sm text-rk-brown hover:bg-rk-brown/10 active:bg-rk-brown/20 rounded-xl transition-all cursor-pointer"
               >
                 <Settings className="w-4 h-4 text-rk-brown/60" /> Pengaturan
               </button>
               <div className="h-px bg-rk-brown/5 my-1" />
               <button 
                 onClick={async () => { setIsOpen(false); await signOutGoogle(); }}
-                className="w-full text-left flex items-center gap-3 px-3 py-2.5 text-sm text-rk-red hover:bg-rk-red/5 rounded-xl transition-colors font-medium cursor-pointer"
+                className="w-full text-left flex items-center gap-3 px-3 py-2.5 text-sm text-rk-red hover:bg-rk-red/10 active:bg-rk-red/20 rounded-xl transition-all font-medium cursor-pointer"
               >
                 <LogOut className="w-4 h-4" /> Logout
               </button>

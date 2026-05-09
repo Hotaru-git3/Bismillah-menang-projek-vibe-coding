@@ -18,6 +18,9 @@ export default function SettingsPage({ profile, expenses, onDeleteAllExpenses }:
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleExportData = async () => {
     const csvContent = "Tanggal,Nominal,Kategori,Deskripsi\n" + 
@@ -134,11 +137,7 @@ export default function SettingsPage({ profile, expenses, onDeleteAllExpenses }:
           <p className="text-[11px] font-bold uppercase text-gray-400 tracking-wider mb-2 pl-1">Akun</p>
 
           <button 
-            onClick={async () => {
-              if (window.confirm('Keluar dari RupiahKu?')) {
-                await signOutGoogle();
-              }
-            }}
+            onClick={() => setShowLogoutConfirm(true)}
             className="cursor-pointer group w-full flex items-center justify-between px-5 text-red-600 bg-red-50/50 hover:bg-red-50 border border-red-100/50 py-4 rounded-xl font-medium transition-all text-sm"
           >
             <div className="flex items-center gap-3">
@@ -197,6 +196,54 @@ export default function SettingsPage({ profile, expenses, onDeleteAllExpenses }:
                   className="flex-1 py-3 rounded-xl font-medium text-white bg-red-500 hover:bg-red-600 transition-colors disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
                 >
                   {isDeleting ? 'Menghapus...' : 'Ya, Hapus'}
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+
+        {showLogoutConfirm && (
+          <>
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[100] cursor-pointer"
+              onClick={() => !isLoggingOut && setShowLogoutConfirm(false)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-[400px] bg-white rounded-3xl p-6 shadow-2xl z-[101] flex flex-col items-center text-center"
+            >
+              <div className="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mb-4">
+                <LogOut className="w-8 h-8" />
+              </div>
+              <h3 className="text-xl font-serif font-bold text-gray-900 mb-2">Keluar Akun?</h3>
+              <p className="text-gray-500 text-sm mb-6 leading-relaxed">
+                Yakin nih mau keluar dari akun RupiahKu?
+              </p>
+              
+              <div className="flex gap-3 w-full">
+                <button 
+                  onClick={() => setShowLogoutConfirm(false)}
+                  disabled={isLoggingOut}
+                  className="flex-1 py-3 rounded-xl font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors disabled:opacity-50 cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button 
+                  onClick={async () => {
+                    setIsLoggingOut(true);
+                    await signOutGoogle();
+                    setIsLoggingOut(false);
+                    setShowLogoutConfirm(false);
+                  }}
+                  disabled={isLoggingOut}
+                  className="flex-1 py-3 rounded-xl font-medium text-white bg-red-500 hover:bg-red-600 transition-colors disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
+                >
+                  {isLoggingOut ? 'Keluar...' : 'Ya, Keluar'}
                 </button>
               </div>
             </motion.div>
