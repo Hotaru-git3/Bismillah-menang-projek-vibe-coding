@@ -25,7 +25,7 @@ export function calculateRunway(budget: number, spent: number, daysInMonth: numb
 export function sanitizeInput(input: string): string {
   // Strip HTML/script tags
   const noTags = input.replace(/<\/?[^>]+(>|$)/g, "");
-  // Escape a few common potentially unsafe characters if needed, or just let Gemini handle
+  // Escape a few common potentially unsafe characters if needed, or just let AI handle
   // but let's remove extreme special characters except basic punctuation
   return noTags.replace(/[<>]/g, "");
 }

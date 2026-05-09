@@ -8,7 +8,7 @@ import { fileURLToPath } from 'url';
 // Vercel API backend simulation
 // If it was in Vercel, this would be in api/gemini.ts,
 // but for run.app, we need the Express server to handle it.
-import geminiHandler from './api/gemini.ts'; 
+import aiHandler from './api/gemini.ts'; 
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -22,7 +22,7 @@ async function startServer() {
 
   // Request mapping for the Vercel-like handler
   app.post('/api/gemini', async (req, res) => {
-    await geminiHandler(req as any, res as any);
+    await aiHandler(req as any, res as any);
   });
 
   // Vite middleware for development

@@ -2,7 +2,7 @@
 
 **RupiahKu** adalah aplikasi pelacak pengeluaran pribadi (*personal finance tracker*) modern berbasis web yang dirancang untuk anak muda. Berbeda dengan aplikasi keuangan tradisional yang membosankan dan kaku, RupiahKu hadir seperti teman tongkrongan yang pintar ngatur duit; ia mencatat, menganalisis, membimbing, dan bahkan me-*roast* kebiasaan finansial buruk kamu. 
 
-Dibangun dengan antarmuka yang bersih (*earth-toned aesthetic*), RupiahKu ditenagai oleh kecerdasan buatan dari Google Gemini dan berjalan di atas infrastruktur real-time Firebase.
+Dibangun dengan antarmuka yang bersih (*earth-toned aesthetic*), RupiahKu ditenagai oleh kecerdasan buatan dari ekosistem NVIDIA (Llama 4 / Mistral) dan berjalan di atas infrastruktur real-time Firebase.
 
 ---
 
@@ -15,7 +15,7 @@ Dibangun dengan antarmuka yang bersih (*earth-toned aesthetic*), RupiahKu ditena
 
 ### 2. 📝 Input Pintar (Natural Language & Receipt Scanner)
 **Intinya:** Tinggal ketik "nasi goreng 15rb" atau foto struk jajan, AI yang otomatis mikir ini masuk kategori apa dan berapa nominalnya. Nggak perlu isi form manual panjang lebar!
-- **Kategorisasi Otomatis:** Gemini AI membedah teks/struk untuk menentukan nominal dan kategori.
+- **Kategorisasi Otomatis:** AI membedah teks/struk untuk menentukan nominal dan kategori.
 - **Mood Tracking:** Lacak emosi saat transaksi (Senang, Biasa Aja, Nyesel).
 - **Split Bill:** Gampang nyatet patungan bareng temen biar hutang nggak kelupaan. Terintegrasi dengan fitur penghapusan parsial yang aman.
 
@@ -43,7 +43,7 @@ Dibangun dengan antarmuka yang bersih (*earth-toned aesthetic*), RupiahKu ditena
 **Intinya:** Data milik lo, dan aman dari celah serangan siber.
 - **Anti Prompt Injection:** AI punya *guardrail* supaya input teks nggak bisa di-*hack* lewat instruksi gelap.
 - **Input Sanitization:** Membersihkan input pengguna dari elemen HTML/scripting (*Anti-XSS*).
-- **Rate Limiting:** Proteksi pemanggilan Gemini API biar nggak kelebihan batas.
+- **Rate Limiting:** Proteksi pemanggilan API AI biar nggak kelebihan batas.
 - **Firestore Security Rules & Backend Validation:** Data keuangan tak akan pernah bocor antar pengguna dan selalu mencocokkan kepemilikan data sebelum dibaca/ditulis.
 - **Data Export:** Bebas di-download jadi `.csv` kapan aja.
 
@@ -53,7 +53,7 @@ Dibangun dengan antarmuka yang bersih (*earth-toned aesthetic*), RupiahKu ditena
 
 - **Frontend:** React 18+, TypeScript, Vite, Tailwind CSS, Material UI X-Charts, Framer Motion
 - **Backend & Database:** Firebase Authentication & Cloud Firestore (Enterprise-grade security)
-- **AI Services:** Google GenAI SDK (Gemini 1.5 Flash untuk asisten parsing data).
+- **AI Services:** Integrasi NVIDIA AI API (menggunakan model open-source mutakhir via NVIDIA NIM).
 - **Arsitektur:** Serverless Firestore, Mobile-first Design Paradigm, Secure Context.
 
 ## 🗃️ Pengelolaan Data

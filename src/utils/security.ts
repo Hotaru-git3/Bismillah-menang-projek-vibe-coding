@@ -66,4 +66,18 @@ export class SecurityUtils {
     if (!key || key.length < 8) return '***';
     return key.substring(0, 4) + '...' + key.substring(key.length - 4);
   }
+
+  static validateExpenses(expenses: any): any[] {
+    if (!expenses) return [];
+    if (!Array.isArray(expenses)) throw new Error('INVALID_INPUT');
+    if (expenses.length > 100) throw new Error('INVALID_INPUT'); // Max 100 items
+
+    return expenses.map((e: any) => ({
+      text: this.sanitizeInput(e?.text || ''),
+      amount: typeof e?.amount === 'number' ? e.amount : 0,
+      category: this.validateCategory(e?.category) ? e.category : 'Lainnya',
+      date: typeof e?.date === 'string' ? this.sanitizeInput(e.date) : new Date().toISOString(),
+      mood: typeof e?.mood === 'string' ? this.sanitizeInput(e.mood) : ''
+    }));
+  }
 }

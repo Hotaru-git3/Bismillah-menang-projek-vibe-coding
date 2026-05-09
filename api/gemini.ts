@@ -1,36 +1,80 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { nvidiaClient } from '../src/services/nvidiaClient';
-import { fallbackParseExpense } from '../src/services/fallbackParser';
-import { SecurityUtils } from '../src/utils/security';
-import type { ParsedExpense, WeeklySummary, SavingsChallenge, RecurringExpense, MicroLesson, AuraRoast, Proyeksi } from '../src/types/api';
+import { nvidiaClient } from '../src/services/nvidiaClient.ts';
+import { fallbackParseExpense } from '../src/services/fallbackParser.ts';
+import { SecurityUtils } from '../src/utils/security.ts';
+import type { ParsedExpense, WeeklySummary, SavingsChallenge, RecurringExpense, MicroLesson, AuraRoast, Proyeksi } from '../src/types/api.ts';
+
+const ipStore = new Map<string, { count: number, resetTime: number }>();
 
 export default async function handler(
   req: VercelRequest,
   res: VercelResponse
 ) {
-  // CORS
+  // CORS & Security Headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  res.setHeader('Content-Security-Policy', "default-src 'self'");
 
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+
+  // Rate Limiting (OWASP Top 10)
+  const ip = (req.headers['x-forwarded-for'] as string) || req.socket?.remoteAddress || 'unknown';
+  const now = Date.now();
+  const rateLimitWindow = 60 * 1000; // 1 minute
+  const maxRequests = 20;
+
+  const ipData = ipStore.get(ip) || { count: 0, resetTime: now + rateLimitWindow };
+  if (now > ipData.resetTime) {
+    ipData.count = 1;
+    ipData.resetTime = now + rateLimitWindow;
+  } else {
+    ipData.count++;
+  }
+  ipStore.set(ip, ipData);
+
+  if (ipData.count > maxRequests) {
+    return res.status(429).json({ error: 'Too Many Requests', code: 'RATE_LIMIT_EXCEEDED' });
+  }
+
+  // Payload size check (OWASP Top 10)
+  if (req.headers['content-length']) {
+    const contentLength = parseInt(req.headers['content-length'], 10);
+    if (contentLength > 5 * 1024 * 1024) { // 5MB limit
+      return res.status(413).json({ error: 'Payload Too Large', code: 'PAYLOAD_TOO_LARGE' });
+    }
+  }
 
   const { action, payload } = req.body || {};
 
   try {
     switch (action) {
       case 'parseReceiptImage': {
-        const { fileBase64, mimeType } = payload;
+        const fileBase64 = payload?.fileBase64;
+        const mimeType = payload?.mimeType;
+
+        if (!fileBase64 || typeof fileBase64 !== 'string' || !mimeType || typeof mimeType !== 'string') {
+          return res.status(400).json({ error: 'Invalid input data' });
+        }
+
+        const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
+        if (!allowedMimeTypes.includes(mimeType)) {
+          return res.status(400).json({ error: 'Invalid MIME type' });
+        }
         
         try {
           const content = [
             { type: "text", text: "You are a receipt analyzer. Please analyze this receipt image and extract a concise, single-line text summary of what it is and the total price. E.g., 'makan siang di warteg 35000' or 'belanja bulanan di minimarket 125000'. Do not include any other text besides this summary string. If it's not a receipt or you can't read the price, just reply 'gagal'." },
-            { type: "image_url", image_url: { url: `data:${mimeType};base64,${fileBase64}` } }
+            { type: "image_url", image_url: { url: `data:${mimeType};base64,${fileBase64.substring(0, 4000000)}` } }
           ];
           
           const resultText = await nvidiaClient.chat([{ role: 'user', content: content as any }]);
-          return res.status(200).json({ result: resultText.trim() });
+          return res.status(200).json({ result: SecurityUtils.sanitizeInput(resultText.trim()) });
         } catch (err: any) {
           console.error("Image parsing error", err?.response?.data || err);
           return res.status(200).json({ result: "gagal: Model tidak mendukung gambar" });
@@ -57,13 +101,11 @@ Rules: "rb/ribu/k"=×1000, "jt/juta/M"=×1000000. "nge-gym"=Olahraga. "laundry"=
             { role: 'user', content: rawText }
           ]);
 
-          // Validasi output
-          if (!SecurityUtils.validateAmount(result.amount)) {
-            result.amount = 0;
-          }
-          if (!SecurityUtils.validateCategory(result.category)) {
-            result.category = 'Lainnya';
-          }
+          // Validasi output Integrity check
+          if (!SecurityUtils.validateAmount(result.amount)) result.amount = 0;
+          if (!SecurityUtils.validateCategory(result.category)) result.category = 'Lainnya';
+          if (result.text) result.text = SecurityUtils.sanitizeInput(result.text).substring(0, 100);
+          if (result.nudge) result.nudge = SecurityUtils.sanitizeInput(result.nudge).substring(0, 100);
 
           return res.status(200).json({ result });
         } catch (apiError) {
@@ -75,7 +117,7 @@ Rules: "rb/ribu/k"=×1000, "jt/juta/M"=×1000000. "nge-gym"=Olahraga. "laundry"=
       }
 
       case 'generateWeeklySummary': {
-        const expenses = payload?.expenses?.slice(0, 30) || [];
+        const expenses = SecurityUtils.validateExpenses(payload?.expenses).slice(0, 30);
         const json = JSON.stringify(expenses.map((e: any) => ({
           item: e.text, amount: e.amount, category: e.category, date: e.date
         })));
@@ -98,7 +140,7 @@ Output JSON:
       }
 
       case 'generateAuraRoast': {
-        const expenses = payload?.expenses?.slice(0, 40) || [];
+        const expenses = SecurityUtils.validateExpenses(payload?.expenses).slice(0, 40);
         const json = JSON.stringify(expenses.map((e: any) => ({
           item: e.text, amount: e.amount, category: e.category, mood: e.mood
         })));
@@ -121,7 +163,7 @@ Output JSON:
       }
 
       case 'generateProyeksi': {
-        const expenses = payload?.expenses || [];
+        const expenses = SecurityUtils.validateExpenses(payload?.expenses);
         const json = JSON.stringify(expenses.map((e: any) => ({
           item: e.text, amount: e.amount, category: e.category, date: e.date
         })));
@@ -153,7 +195,7 @@ Output JSON:
       }
 
       case 'detectRecurringExpense': {
-        const expenses = payload?.expenses?.slice(0, 50) || [];
+        const expenses = SecurityUtils.validateExpenses(payload?.expenses).slice(0, 50);
         const json = JSON.stringify(expenses.map((e: any) => ({
           item: e.text, amount: e.amount, date: e.date
         })));
@@ -176,7 +218,7 @@ Output JSON:
       }
 
       case 'generateMicroLesson': {
-        const expenses = payload?.expenses?.slice(0, 30) || [];
+        const expenses = SecurityUtils.validateExpenses(payload?.expenses).slice(0, 30);
         const json = JSON.stringify(expenses.map((e: any) => ({
           item: e.text, amount: e.amount, category: e.category
         })));
@@ -201,7 +243,7 @@ Output JSON:
       }
 
       case 'generateSavingsChallenge': {
-        const expenses = payload?.expenses?.slice(0, 30) || [];
+        const expenses = SecurityUtils.validateExpenses(payload?.expenses).slice(0, 30);
         const json = JSON.stringify(expenses.map((e: any) => ({
           item: e.text, amount: e.amount, category: e.category
         })));

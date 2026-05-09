@@ -1,4 +1,4 @@
-import { ParsedExpense, CategoryType } from '../types/api';
+import type { ParsedExpense, CategoryType } from '../types/api.ts';
 
 export function fallbackParseExpense(rawText: string): ParsedExpense {
   const normalized = rawText.toLowerCase().trim();

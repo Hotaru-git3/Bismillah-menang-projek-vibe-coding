@@ -1,6 +1,6 @@
-import axios, { AxiosInstance } from 'axios';
-import { aiRateLimiter } from '../utils/rateLimiter';
-import { SecurityUtils } from '../utils/security';
+import axios, { type AxiosInstance } from 'axios';
+import { aiRateLimiter } from '../utils/rateLimiter.ts';
+import { SecurityUtils } from '../utils/security.ts';
 
 interface NvidiaConfig {
   primaryModel: string;
@@ -28,7 +28,6 @@ export class NvidiaClient {
     }
 
     this.axiosInstance = axios.create({
-      baseURL: this.config.baseURL,
       timeout: this.config.timeout,
       headers: {
         'Authorization': `Bearer ${this.config.apiKey}`,
@@ -55,14 +54,14 @@ export class NvidiaClient {
     return aiRateLimiter.enqueue(async () => {
       try {
         // Coba primary model
-        const response = await this.axiosInstance.post('', payload);
+        const response = await this.axiosInstance.post(this.config.baseURL, payload);
         return response.data.choices[0].message.content;
       } catch (error: any) {
         console.warn(`⚠️ ${this.config.primaryModel} gagal:`, error.message);
         
         // Fallback ke secondary model
         payload.model = this.config.fallbackModel;
-        const fallbackResponse = await this.axiosInstance.post('', payload);
+        const fallbackResponse = await this.axiosInstance.post(this.config.baseURL, payload);
         return fallbackResponse.data.choices[0].message.content;
       }
     });

@@ -129,7 +129,7 @@ export default function ExpenseList({ expenses, lastAddedId, onUndo, onDeleteExp
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ type: "spring", stiffness: 300, damping: 25, mass: 0.5, delay: i * 0.03 }}
               key={expense.id} 
-              className="flex flex-col p-4 bg-white rounded-2xl shadow-[0_2px_10px_rgba(62,39,35,0.04)] hover:shadow-[0_4px_16px_rgba(62,39,35,0.06)] relative transition-shadow duration-200"
+              className="flex flex-col h-full p-4 bg-white rounded-2xl shadow-[0_2px_10px_rgba(62,39,35,0.04)] hover:shadow-[0_4px_16px_rgba(62,39,35,0.06)] relative transition-shadow duration-200"
             >
               {editingId === expense.id ? (
                 <div className="flex flex-col gap-3">
@@ -171,20 +171,20 @@ export default function ExpenseList({ expenses, lastAddedId, onUndo, onDeleteExp
                    </div>
                 </div>
               ) : (
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="bg-rk-cream-dark p-2 rounded-xl relative">
+                <div className="flex items-start justify-between gap-2 flex-1 mb-3">
+                  <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
+                    <div className="bg-rk-cream-dark p-2 rounded-xl relative shrink-0">
                        {getIcon(expense.category, expense.text)}
                        {expense.mood && (
                          <span className="absolute -bottom-1 -right-1 text-xs">{expense.mood}</span>
                        )}
                     </div>
-                    <div>
-                      <p className="font-medium text-rk-brown text-[15px]">{expense.text}</p>
-                      <p className="text-xs text-rk-brown/60 mt-0.5">{expense.category}</p>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-rk-brown text-[15px] truncate">{expense.text}</p>
+                      <p className="text-xs text-rk-brown/60 mt-0.5 truncate">{expense.category}</p>
                     </div>
                   </div>
-                  <div className="text-right flex flex-col items-end">
+                  <div className="text-right flex flex-col items-end shrink-0">
                     <p className="font-semibold text-rk-brown">{formatRupiah(expense.amount)}</p>
                     
                     {lastAddedId === expense.id && onUndo ? (
@@ -205,7 +205,7 @@ export default function ExpenseList({ expenses, lastAddedId, onUndo, onDeleteExp
               
               {/* Actions row: reveal slightly on hover or click */}
               {editingId !== expense.id && confirmDeleteId !== expense.id && (
-                <div className="flex justify-end gap-3 mt-3 border-t border-rk-brown/5 pt-3">
+                <div className="flex justify-end gap-3 mt-auto border-t border-rk-brown/5 pt-3">
                    <button onClick={() => handleEditClick(expense)} className="cursor-pointer text-[11px] font-medium flex items-center gap-1 text-rk-brown/50 hover:text-rk-gold transition-colors">
                      <Edit2 className="w-3 h-3" /> Edit
                    </button>
