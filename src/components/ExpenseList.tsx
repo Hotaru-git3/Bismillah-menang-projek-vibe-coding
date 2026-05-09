@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { formatRupiah } from '../utils/helpers';
 import { Expense } from '../utils/storage';
 import { motion, AnimatePresence } from 'motion/react';
-import { Coffee, TrendingDown, ShoppingBag, RotateCcw, Edit2, Trash2, Check, X, Search, Car, Utensils, Mic2, Tv, CreditCard, Zap, Heart, BookOpen, GraduationCap, Plane, Home, Smartphone, HelpCircle } from 'lucide-react';
+import { Coffee, TrendingDown, ShoppingBag, RotateCcw, Edit2, Trash2, Check, X, Search, Car, Utensils, Mic2, Tv, CreditCard, Zap, Heart, BookOpen, GraduationCap, Plane, Home, Smartphone, HelpCircle, Dumbbell, Tag, Wallet, Banknote } from 'lucide-react';
 
 interface ExpenseListProps {
   expenses: Expense[];
@@ -55,12 +55,26 @@ export default function ExpenseList({ expenses, lastAddedId, onUndo, onDeleteExp
     if (lowerText.includes('obat') || lowerText.includes('rs') || lowerText.includes('dokter') || lowerText.includes('sehat')) return <Heart className="w-5 h-5 text-rose-500" />;
     if (lowerText.includes('buku') || lowerText.includes('kuliah') || lowerText.includes('sekolah') || lowerText.includes('kursus')) return <GraduationCap className="w-5 h-5 text-indigo-500" />;
     if (lowerText.includes('jalan') || lowerText.includes('trip') || lowerText.includes('liburan') || lowerText.includes('pesawat')) return <Plane className="w-5 h-5 text-teal-500" />;
+    if (lowerText.includes('gym') || lowerText.includes('fitness') || lowerText.includes('workout')) return <Dumbbell className="w-5 h-5 text-neutral-500" />;
+    if (lowerText.includes('baju') || lowerText.includes('belanja') || lowerText.includes('tas')) return <Tag className="w-5 h-5 text-pink-500" />;
+    if (lowerText.includes('emas') || lowerText.includes('saham') || lowerText.includes('invest') || lowerText.includes('transfer')) return <Wallet className="w-5 h-5 text-green-600" />;
 
     // Category fallbacks
     switch (category) {
+      case 'Makanan & Minuman': return <Utensils className="w-5 h-5 text-orange-500" />;
+      case 'Transportasi': return <Car className="w-5 h-5 text-blue-500" />;
+      case 'Hiburan': return <Mic2 className="w-5 h-5 text-purple-500" />;
+      case 'Belanja & Fashion': return <Tag className="w-5 h-5 text-pink-500" />;
+      case 'Kesehatan & Kebutuhan Pokok': return <Heart className="w-5 h-5 text-rose-500" />;
+      case 'Keuangan & Investasi': return <Wallet className="w-5 h-5 text-green-600" />;
+      case 'Pendidikan': return <GraduationCap className="w-5 h-5 text-indigo-500" />;
+      case 'Olahraga & Kebugaran': return <Dumbbell className="w-5 h-5 text-neutral-500" />;
+      case 'Pulsa, Tagihan & Topup Digital': return <Smartphone className="w-5 h-5 text-cyan-500" />;
+      
+      // old categories fallback
       case 'Investasi': return <TrendingDown className="w-5 h-5 text-rk-gold" />;
       case 'Makanan': return <Utensils className="w-5 h-5 text-orange-500" />;
-      case 'Transportasi': return <Car className="w-5 h-5 text-blue-500" />;
+      case 'Transport': return <Car className="w-5 h-5 text-blue-500" />;
       case 'Keinginan': return <Coffee className="w-5 h-5 text-rk-red" />;
       case 'Kebutuhan': return <ShoppingBag className="w-5 h-5 text-rk-brown" />;
       default: return <HelpCircle className="w-5 h-5 text-rk-brown/40" />;

@@ -1,7 +1,7 @@
 export interface ParsedExpense {
   amount: number;
   text: string;
-  category: 'Makanan' | 'Transport' | 'Belanja' | 'Hiburan' | 'Lainnya' | 'Kebutuhan' | 'Investasi' | 'Keinginan';
+  category: string;
   nudge: string;
   splitBill?: {
     totalAmount: number;

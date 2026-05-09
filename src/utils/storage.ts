@@ -39,7 +39,7 @@ export interface UserProfile {
   }[];
 }
 
-export type ExpenseCategory = 'Makanan' | 'Transport' | 'Belanja' | 'Hiburan' | 'Lainnya' | 'Kebutuhan' | 'Investasi' | 'Keinginan';
+export type ExpenseCategory = string;
 
 export interface Expense {
   id: string;

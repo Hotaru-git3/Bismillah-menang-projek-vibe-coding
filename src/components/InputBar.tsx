@@ -178,6 +178,8 @@ export default function InputBar({ onExpenseAdded, onSetMood }: InputBarProps) {
       setIsError(true);
       if (err.message === "AMOUNT_OUT_OF_RANGE") {
         setErrorMessage("Nominalnya nggak masuk akal bro. Pastiin antara Rp1 s/d Rp100.000.000 ya.");
+      } else if (err.message) {
+        setErrorMessage(err.message);
       } else {
         setErrorMessage("AI-nya lagi sibuk, coba lagi sebentar ya 🙏");
       }

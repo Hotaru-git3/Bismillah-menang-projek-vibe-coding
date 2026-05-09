@@ -22,8 +22,10 @@ export default async function handler(req: VercelRequest | any, res: VercelRespo
   }
 
   try {
-    const userApiKey = "AIzaSyDXmX9j2P8oa49E03WGCbPVF6QhZI86Qas";
-    const aiKeyToUse = userApiKey || process.env.GEMINI_API_KEY;
+    const aiKeyToUse = process.env.GEMINI_API_KEY;
+    if (!aiKeyToUse) {
+      throw new Error("GEMINI_API_KEY belum disetting di environment (Vercel/Cloud Run). Silakan setting API key yang valid.");
+    }
     const ai = new GoogleGenAI({ apiKey: aiKeyToUse });
     const { action, payload } = req.body;
 
@@ -281,10 +283,13 @@ export default async function handler(req: VercelRequest | any, res: VercelRespo
 
   } catch (e: any) {
     console.error("Vercel API Error:", e);
+    let errorMessage = e.message || "An unknown error occurred";
+    if (errorMessage.includes("API_KEY_INVALID") || errorMessage.includes("API key not valid")) {
+       errorMessage = "API key yang Anda pasang di Cloud Run/Vercel tidak valid atau sudah expired. Silakan generate API key baru di https://aistudio.google.com/app/apikey dan update environment variabel GEMINI_API_KEY.";
+    }
+
     return res.status(500).json({ 
-      error: e.message && e.message.includes("Input tidak valid") 
-        ? e.message 
-        : "AI-nya lagi sibuk, coba lagi sebentar ya \uD83D\uDE4F" 
+      error: errorMessage
     });
   }
 }
