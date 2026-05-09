@@ -1,6 +1,6 @@
 import axios, { type AxiosInstance } from 'axios';
-import { SecurityUtils } from '../utils/security.ts';
-import { aiRateLimiter } from '../utils/rateLimiter.ts';
+import { SecurityUtils } from '../utils/security';
+import { aiRateLimiter } from '../utils/rateLimiter';
 
 interface NvidiaConfig {
   primaryModel: string;

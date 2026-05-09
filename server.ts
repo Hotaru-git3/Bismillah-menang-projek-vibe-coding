@@ -8,7 +8,7 @@ import { fileURLToPath } from 'url';
 // Vercel API backend simulation
 // If it was in Vercel, this would be in api/gemini.ts,
 // but for run.app, we need the Express server to handle it.
-import aiHandler from './api/gemini.ts'; 
+import aiHandler from './api/gemini'; 
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
