@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
-import handler from './gemini'; // the typescript module
+import handler from './gemini.js'; // the typescript module
 
 const app = express();
 app.use(cors());

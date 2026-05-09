@@ -1,8 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { nvidiaClient } from '../src/services/nvidiaClient';
-import { fallbackParseExpense } from '../src/services/fallbackParser';
-import { SecurityUtils } from '../src/utils/security';
-import type { ParsedExpense, WeeklySummary, SavingsChallenge, RecurringExpense, MicroLesson, AuraRoast, Proyeksi } from '../src/types/api';
+import { nvidiaClient } from '../src/services/nvidiaClient.js';
+import { fallbackParseExpense } from '../src/services/fallbackParser.js';
+import { SecurityUtils } from '../src/utils/security.js';
+import type { ParsedExpense, WeeklySummary, SavingsChallenge, RecurringExpense, MicroLesson, AuraRoast, Proyeksi } from '../src/types/api.js';
 
 function isVercelAIError(error: any): boolean {
   const msg = error?.message || '';
