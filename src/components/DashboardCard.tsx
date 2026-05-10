@@ -1,6 +1,7 @@
 import { motion } from 'motion/react';
 import { Expense } from '../utils/storage';
 import { formatRupiah, calculateRunway } from '../utils/helpers';
+import { getCategoryColor } from '../utils/colors';
 
 interface DashboardProps {
   expenses: Expense[];
@@ -26,29 +27,29 @@ export default function DashboardCard({ expenses, monthlyBudget }: DashboardProp
 
   // Group by category for the donut chart
   const byCategory = thisMonthExpenses.reduce((acc, e) => {
-    acc[e.category] = (acc[e.category] || 0) + e.amount;
+    const category = e.category || 'Lainnya';
+    acc[category] = (acc[category] || 0) + e.amount;
     return acc;
   }, {} as Record<string, number>);
 
-  const kebutuhan = byCategory['Kebutuhan'] || 0;
-  const investasi = byCategory['Investasi'] || 0;
-  const keinginan = byCategory['Keinginan'] || 0;
-  
   // Donut chart calculations
   const totalCategory = totalSpent || 1; // prevent div by zero
-  const p1 = (kebutuhan / totalCategory) * 100;
-  const p2 = (investasi / totalCategory) * 100;
-  const p3 = (keinginan / totalCategory) * 100;
+  
+  // Sort categories by amount desc
+  const sortedCategories = Object.entries(byCategory)
+    .sort((a, b) => b[1] - a[1])
+    .filter(([_, amount]) => amount > 0);
 
+  let currentOffset = 25; // CSS trick offset start
   const c = 100; // circumference
   
-  const dash1 = `${p1} ${c - p1}`;
-  const dash2 = `${p2} ${c - p2}`;
-  const dash3 = `${p3} ${c - p3}`;
-  
-  const offset1 = 25;
-  const offset2 = 100 - p1 + 25;
-  const offset3 = 100 - p1 - p2 + 25;
+  const segments = sortedCategories.map(([label, amount], i) => {
+    const p = (amount / totalCategory) * 100;
+    const dash = `${p} ${c - p}`;
+    const offset = currentOffset;
+    currentOffset = currentOffset - p;
+    return { label, p, dash, offset, color: getCategoryColor(label), delay: i * 0.1 };
+  });
 
   return (
     <div className="bg-white rounded-3xl shadow-[0_4px_24px_rgba(62,39,35,0.06)] p-5 md:p-6 lg:p-7 mb-0 relative overflow-hidden flex flex-col gap-5 md:gap-6 h-full">
@@ -72,24 +73,12 @@ export default function DashboardCard({ expenses, monthlyBudget }: DashboardProp
             <circle cx="18" cy="18" r="15.9155" fill="transparent" stroke="#f5e6d3" strokeWidth="3.5" />
             
             {/* Segments */}
-            {p3 > 0 && (
-              <motion.circle cx="18" cy="18" r="15.9155" fill="transparent" stroke="#8B3A3A" strokeWidth="3.5"
-                strokeDasharray={dash3} strokeDashoffset={offset3}
-                initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}
+            {segments.map((segment, i) => (
+              <motion.circle key={i} cx="18" cy="18" r="15.9155" fill="transparent" stroke={segment.color} strokeWidth="3.5"
+                strokeDasharray={segment.dash} strokeDashoffset={segment.offset}
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: segment.delay }}
               />
-            )}
-            {p2 > 0 && (
-               <motion.circle cx="18" cy="18" r="15.9155" fill="transparent" stroke="#C8A45C" strokeWidth="3.5"
-                 strokeDasharray={dash2} strokeDashoffset={offset2}
-                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
-               />
-            )}
-            {p1 > 0 && (
-              <motion.circle cx="18" cy="18" r="15.9155" fill="transparent" stroke="#3E2723" strokeWidth="3.5"
-                strokeDasharray={dash1} strokeDashoffset={offset1}
-                initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}
-              />
-            )}
+            ))}
           </svg>
           {/* Center text */}
           <div className="absolute inset-0 flex items-center justify-center flex-col">
@@ -116,12 +105,17 @@ export default function DashboardCard({ expenses, monthlyBudget }: DashboardProp
       </div>
 
       <div className="flex gap-4 md:gap-6 border-t border-rk-brown/10 pt-4 flex-wrap">
-        {[{l: 'Kebutuhan', c: 'bg-rk-brown', p: p1}, {l: 'Investasi', c: 'bg-rk-gold', p: p2}, {l: 'Keinginan', c: 'bg-rk-red', p: p3}].map((s, i) => (
+        {segments.slice(0, 4).map((s, i) => (
            <div key={i} className="flex items-center gap-1.5 text-xs text-rk-brown/80">
-             <div className={`w-2.5 h-2.5 rounded-full ${s.c}`} />
-             <span>{s.l} {Math.round(s.p)}%</span>
+             <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: s.color }} />
+             <span className="whitespace-nowrap">{s.label} {Math.round(s.p)}%</span>
            </div>
         ))}
+        {segments.length > 4 && (
+           <div className="flex items-center gap-1.5 text-xs text-rk-brown/80 opacity-60">
+             <span>+ {segments.length - 4} lainnya</span>
+           </div>
+        )}
       </div>
       
     </div>

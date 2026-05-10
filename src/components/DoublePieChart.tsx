@@ -4,38 +4,11 @@ import Box from '@mui/material/Box';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import { Expense } from '../utils/storage';
+import { getCategoryColor, getMoodColor, LEGACY_MOOD_MAP, categoryColors } from '../utils/colors';
 
 interface DoublePieChartProps {
   expenses: Expense[];
 }
-
-// Matching app's theme colors where possible
-const categoryColors: Record<string, string> = {
-  "Makanan": "#E8B86D", // rk-amber
-  "Transport": "#60a5fa",
-  "Belanja": "#c084fc",
-  "Hiburan": "#f472b6",
-  "Lainnya": "#9ca3af",
-  "Kebutuhan": "#3E2723", // rk-brown
-  "Investasi": "#D4AF37", // rk-gold-dark
-  "Keinginan": "#8B3A3A" // rk-red
-};
-
-const moodColors: Record<string, string> = {
-  "Seneng": "#FDE047", 
-  "Biasa Aja": "#D1D5DB", 
-  "Nyesel": "#FCA5A5", 
-  "Berbunga": "#F9A8D4", 
-  "Kacau": "#9CA3AF"
-};
-
-const LEGACY_MOOD_MAP: Record<string, string> = {
-  "😊": "Seneng",
-  "🤔": "Biasa Aja",
-  "😐": "Biasa Aja",
-  "😟": "Nyesel",
-  "😤": "Kacau"
-};
 
 type ViewType = 'category' | 'mood';
 
@@ -58,15 +31,12 @@ export default function DoublePieChart({ expenses }: DoublePieChartProps): React
       return acc;
     }, {} as Record<string, number>);
 
-    const colorMap = type === 'category' ? categoryColors : moodColors;
-    const defaultColor = type === 'category' ? categoryColors["Lainnya"] : moodColors["Biasa Aja"];
-
     return Object.entries(grouped).map(([label, amount]) => ({
       id: label,
       label,
       value: amount,
       percentage: totalAmount ? (amount / totalAmount) * 100 : 0,
-      color: colorMap[label] || defaultColor,
+      color: type === 'category' ? getCategoryColor(label) : getMoodColor(label),
     }));
   };
 
@@ -91,14 +61,12 @@ export default function DoublePieChart({ expenses }: DoublePieChartProps): React
       }, {} as Record<string, number>);
       
       return Object.entries(childAmounts).map(([childLabel, amount]) => {
-        const childColorMap = childType === 'category' ? categoryColors : moodColors;
-        const defaultColor = childType === 'category' ? categoryColors["Lainnya"] : moodColors["Biasa Aja"];
         return {
           id: `${parent.id}-${childLabel}`,
           label: childLabel,
           value: amount,
           percentage: parent.value ? (amount / parent.value) * 100 : 0,
-          color: childColorMap[childLabel] || defaultColor,
+          color: childType === 'category' ? getCategoryColor(childLabel) : getMoodColor(childLabel),
         };
       });
     });
@@ -198,9 +166,9 @@ export default function DoublePieChart({ expenses }: DoublePieChartProps): React
         <div className="flex flex-col gap-2">
           <p className="font-bold text-rk-brown/40 text-center uppercase tracking-widest text-[9px]">Kategori</p>
           <div className="flex flex-wrap justify-center gap-1.5">
-             {["Makanan", "Transport", "Belanja", "Hiburan", "Lainnya", "Kebutuhan", "Investasi", "Keinginan"].map((label) => (
+             {Array.from(new Set(expenses.map(e => e.category))).filter(Boolean).map((label) => (
                 <div key={label} className="flex items-center gap-1.5 bg-white px-2 py-1 rounded border border-rk-brown/5 shadow-sm">
-                  <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: categoryColors[label] }}></div>
+                  <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: getCategoryColor(label) }}></div>
                   <span className="text-[10px] font-medium text-rk-brown/80">{label}</span>
                 </div>
              ))}
@@ -209,9 +177,12 @@ export default function DoublePieChart({ expenses }: DoublePieChartProps): React
         <div className="flex flex-col gap-2">
           <p className="font-bold text-rk-brown/40 text-center uppercase tracking-widest text-[9px]">Mood</p>
           <div className="flex flex-wrap justify-center gap-1.5">
-             {Object.entries(moodColors).map(([label, color]) => (
+             {Array.from(new Set(expenses.map(e => {
+                let key = e.mood;
+                return key ? (LEGACY_MOOD_MAP[key] || key) : 'Biasa Aja';
+             }))).map((label) => (
                 <div key={label} className="flex items-center gap-1.5 bg-white px-2 py-1 rounded border border-rk-brown/5 shadow-sm">
-                  <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: color }}></div>
+                  <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: getMoodColor(label) }}></div>
                   <span className="text-[10px] font-medium text-rk-brown/80">{label}</span>
                 </div>
              ))}

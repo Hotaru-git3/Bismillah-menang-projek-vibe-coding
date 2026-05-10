@@ -92,7 +92,24 @@ export default function App() {
 
   if (!user) {
     return (
-      <div className="min-h-[100dvh] bg-gradient-to-br from-rk-cream to-[#DED5C9] flex items-center justify-center p-4 py-12 sm:p-6 text-center antialiased">
+      <div className="min-h-[100dvh] bg-[#F5EFE6] flex items-center justify-center p-4 sm:p-6 text-center antialiased relative overflow-hidden">
+         {/* Background Ornaments */}
+         <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+           <svg className="absolute opacity-[0.03] w-full h-full" xmlns="http://www.w3.org/2000/svg">
+             <filter id="noiseFilter"><feTurbulence type="fractalNoise" baseFrequency="0.6" numOctaves="3" stitchTiles="stitch"/></filter>
+             <rect width="100%" height="100%" filter="url(#noiseFilter)"/>
+           </svg>
+           <motion.div 
+             animate={{ y: [0, -30, 0], scale: [1, 1.05, 1], rotate: [0, 5, 0] }}
+             transition={{ repeat: Infinity, duration: 15, ease: "easeInOut" }}
+             className="absolute top-[-10%] right-[-5%] w-[40%] h-[40%] bg-rk-gold/10 blur-[80px] rounded-full"
+           />
+           <motion.div 
+             animate={{ x: [0, 20, 0], y: [0, 20, 0], scale: [1, 1.1, 1] }}
+             transition={{ repeat: Infinity, duration: 20, ease: "easeInOut", delay: 2 }}
+             className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-rk-brown/5 blur-[100px] rounded-full"
+           />
+         </div>
          <AuthForm />
       </div>
     );
