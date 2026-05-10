@@ -1,26 +1,37 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Flame } from 'lucide-react';
-import { Expense } from '../utils/storage';
+import { Flame, Bookmark } from 'lucide-react';
+import { Expense, UserProfile } from '../utils/storage';
 import { generateAuraRoast } from '../services/geminiService';
+import { syncUserProfile } from '../utils/firebaseUtils';
 
 interface Props {
   expenses: Expense[];
+  profile: UserProfile;
   onShowToast: (msg: string) => void;
 }
 
-export default function RoastCard({ expenses, onShowToast }: Props) {
-  const [roastData, setRoastData] = React.useState<{ aura: string, characterTitle: string, roast: string } | null>(null);
+export default function RoastCard({ expenses, profile, onShowToast }: Props) {
+  const [roastData, setRoastData] = React.useState<{ aura: string, characterTitle: string, roast: string, generatedAt: string } | null>(profile?.latestRoast || null);
   const [loading, setLoading] = React.useState(false);
   const [retryCount, setRetryCount] = React.useState(0);
+
+  useEffect(() => {
+    if (profile?.latestRoast && !roastData) {
+      setRoastData(profile.latestRoast);
+    }
+  }, [profile?.latestRoast]);
 
   const loadRoast = async () => {
     if (expenses.length === 0) return;
     setLoading(true);
     try {
         const res = await generateAuraRoast(expenses);
-        setRoastData(res);
+        setRoastData({ ...res, generatedAt: new Date().toISOString() });
         setRetryCount(0);
+        
+        const newProfile = { ...profile, latestRoast: { ...res, generatedAt: new Date().toISOString() } };
+        await syncUserProfile(newProfile);
     } catch (e: any) {
         console.error(e);
         if (retryCount < 2) {
@@ -81,9 +92,38 @@ export default function RoastCard({ expenses, onShowToast }: Props) {
            "{roastData.roast}"
          </p>
          
-         <button onClick={loadRoast} className="cursor-pointer text-white/40 hover:text-white text-xs underline transition-colors">
-           Roast Ulang (Kalo Berani)
-         </button>
+         <div className="flex items-center gap-6 mt-4">
+            <button onClick={loadRoast} className="cursor-pointer text-white/40 hover:text-white text-xs underline transition-colors">
+              Roast Ulang (Kalo Berani)
+            </button>
+            <button 
+               onClick={async () => {
+                     const isSaved = profile.savedRoasts?.some(s => s.generatedAt === roastData.generatedAt);
+                     let newSaved = profile.savedRoasts ? [...profile.savedRoasts] : [];
+                     if (isSaved) {
+                       newSaved = newSaved.filter(s => s.generatedAt !== roastData.generatedAt);
+                       onShowToast("Roast dihapus dari arsip.");
+                     } else {
+                       newSaved.unshift({
+                          id: Math.random().toString(36).substring(2, 9),
+                          ...roastData,
+                          generatedAt: roastData.generatedAt || new Date().toISOString()
+                       });
+                       onShowToast("Roast disimpan ke arsip.");
+                     }
+                     const newProfile = { ...profile, savedRoasts: newSaved };
+                     await syncUserProfile(newProfile);
+               }}
+               className="cursor-pointer text-white/40 hover:text-white transition-colors flex items-center gap-1 text-xs font-semibold"
+               title="Simpan Roast"
+             >
+               {profile.savedRoasts?.some(s => s.generatedAt === roastData.generatedAt) ? (
+                  <><Bookmark className="w-3.5 h-3.5 fill-white text-white" /> Tersimpan</>
+               ) : (
+                  <><Bookmark className="w-3.5 h-3.5" /> Simpan ke Arsip</>
+               )}
+             </button>
+         </div>
       </div>
     </motion.div>
   );

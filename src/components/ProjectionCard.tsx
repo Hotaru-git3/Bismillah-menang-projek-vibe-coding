@@ -1,26 +1,37 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Rocket } from 'lucide-react';
-import { Expense } from '../utils/storage';
+import { Rocket, Bookmark } from 'lucide-react';
+import { Expense, UserProfile } from '../utils/storage';
 import { generateProyeksi } from '../services/geminiService';
+import { syncUserProfile } from '../utils/firebaseUtils';
 
 interface Props {
   expenses: Expense[];
+  profile: UserProfile;
   onShowToast: (msg: string) => void;
 }
 
-export default function ProjectionCard({ expenses, onShowToast }: Props) {
-  const [proyeksi, setProyeksi] = React.useState<any>(null);
+export default function ProjectionCard({ expenses, profile, onShowToast }: Props) {
+  const [proyeksi, setProyeksi] = React.useState<any>(profile?.latestProjection || null);
   const [loading, setLoading] = React.useState(false);
   const [retryCount, setRetryCount] = React.useState(0);
+
+  useEffect(() => {
+    if (profile?.latestProjection && !proyeksi) {
+      setProyeksi(profile.latestProjection);
+    }
+  }, [profile?.latestProjection]);
 
   const loadProyeksi = async () => {
     if (expenses.length === 0) return;
     setLoading(true);
     try {
       const res = await generateProyeksi(expenses);
-      setProyeksi(res);
+      setProyeksi({ ...res, generatedAt: new Date().toISOString() });
       setRetryCount(0);
+      
+      const newProfile = { ...profile, latestProjection: { ...res, generatedAt: new Date().toISOString() } };
+      await syncUserProfile(newProfile);
     } catch (e: any) {
       console.error(e);
       if (retryCount < 2) {
@@ -112,10 +123,37 @@ export default function ProjectionCard({ expenses, onShowToast }: Props) {
             </p>
         </div>
       </div>
-      <div className="lg:col-span-2 text-center pt-2">
+      <div className="lg:col-span-2 flex items-center justify-center gap-6 pt-2">
         <button onClick={loadProyeksi} className="cursor-pointer text-xs text-rk-brown/40 hover:text-rk-brown underline transition-colors">
           Hitung Ulang Proyeksi
         </button>
+        <button 
+           onClick={async () => {
+                 const isSaved = profile.savedProjections?.some(s => s.generatedAt === proyeksi.generatedAt);
+                 let newSaved = profile.savedProjections ? [...profile.savedProjections] : [];
+                 if (isSaved) {
+                   newSaved = newSaved.filter(s => s.generatedAt !== proyeksi.generatedAt);
+                   onShowToast("Proyeksi dihapus dari arsip.");
+                 } else {
+                   newSaved.unshift({
+                      id: Math.random().toString(36).substring(2, 9),
+                      ...proyeksi,
+                      generatedAt: proyeksi.generatedAt || new Date().toISOString()
+                   });
+                   onShowToast("Proyeksi disimpan ke arsip.");
+                 }
+                 const newProfile = { ...profile, savedProjections: newSaved };
+                 await syncUserProfile(newProfile);
+           }}
+           className="cursor-pointer text-rk-brown/40 hover:text-rk-brown transition-colors flex items-center gap-1 text-xs font-semibold"
+           title="Simpan Proyeksi"
+         >
+           {profile.savedProjections?.some(s => s.generatedAt === proyeksi.generatedAt) ? (
+              <><Bookmark className="w-3.5 h-3.5 fill-rk-brown text-rk-brown" /> Tersimpan</>
+           ) : (
+              <><Bookmark className="w-3.5 h-3.5" /> Simpan ke Arsip</>
+           )}
+         </button>
       </div>
     </motion.div>
   );

@@ -23,6 +23,8 @@ export interface UserProfile {
     projection6Months: number;
     generatedAt: string;
   };
+  latestRoast?: any;
+  latestProjection?: any;
   savedSummaries?: {
     id: string;
     summary: string;
@@ -37,6 +39,8 @@ export interface UserProfile {
     projection6Months: number;
     generatedAt: string;
   }[];
+  savedProjections?: any[];
+  savedRoasts?: any[];
 }
 
 export type ExpenseCategory = string;

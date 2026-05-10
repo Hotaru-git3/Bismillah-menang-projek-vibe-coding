@@ -13,20 +13,33 @@ interface Props {
 
 export default function SavedItemsSidebar({ isOpen, onClose, profile }: Props) {
   const { refreshProfile } = useFirebase();
-  const hasItems = (profile.savedSummaries && profile.savedSummaries.length > 0) || (profile.savedRecurring && profile.savedRecurring.length > 0);
+  const hasItems = (profile.savedSummaries && profile.savedSummaries.length > 0) || 
+                   (profile.savedRecurring && profile.savedRecurring.length > 0) ||
+                   (profile.savedProjections && profile.savedProjections.length > 0) ||
+                   (profile.savedRoasts && profile.savedRoasts.length > 0);
 
   const handleDeleteSummary = async (id: string) => {
      if (!profile.savedSummaries) return;
      const newSaved = profile.savedSummaries.filter(s => s.id !== id);
      await syncUserProfile({ ...profile, savedSummaries: newSaved });
-     await refreshProfile();
   };
 
   const handleDeleteRecurring = async (id: string) => {
      if (!profile.savedRecurring) return;
      const newSaved = profile.savedRecurring.filter(s => s.id !== id);
      await syncUserProfile({ ...profile, savedRecurring: newSaved });
-     await refreshProfile();
+  };
+
+  const handleDeleteProjection = async (id: string) => {
+     if (!profile.savedProjections) return;
+     const newSaved = profile.savedProjections.filter(s => s.id !== id);
+     await syncUserProfile({ ...profile, savedProjections: newSaved });
+  };
+
+  const handleDeleteRoast = async (id: string) => {
+     if (!profile.savedRoasts) return;
+     const newSaved = profile.savedRoasts.filter(s => s.id !== id);
+     await syncUserProfile({ ...profile, savedRoasts: newSaved });
   };
 
   return (
@@ -102,6 +115,43 @@ export default function SavedItemsSidebar({ isOpen, onClose, profile }: Props) {
                               <p className="text-[9px] uppercase tracking-widest text-rk-brown/60 mb-1">Proyeksi 6 Bulan</p>
                               <p className="font-serif justify-start text-sm font-bold text-rk-brown">Rp {rec.projection6Months.toLocaleString('id-ID')}</p>
                            </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {profile.savedProjections && profile.savedProjections.length > 0 && (
+                    <div className="space-y-4">
+                      <h3 className="text-xs font-bold text-rk-brown/40 uppercase tracking-widest pl-1">Proyeksi</h3>
+                      {profile.savedProjections.map((proj) => (
+                        <div key={proj.id} className="bg-white rounded-xl p-4 shadow-sm border border-rk-brown/5 relative group">
+                           <button onClick={() => handleDeleteProjection(proj.id)} className="cursor-pointer absolute top-3 right-3 text-rk-brown/30 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <Trash2 className="w-4 h-4" />
+                           </button>
+                           <p className="text-[10px] text-rk-brown/50 mb-2">{new Date(proj.generatedAt).toLocaleString('id-ID', {day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'})}</p>
+                           <h4 className="text-xs font-bold text-rk-brown uppercase mb-1">Latte Factor</h4>
+                           <p className="text-sm text-rk-brown mb-2">{proj.latteFactor.items.join(', ')}</p>
+                           <div className="bg-rk-brown/5 rounded-lg p-2 border border-rk-brown/10">
+                              <p className="text-[9px] uppercase tracking-widest text-rk-brown/60 mb-1">1 Tahun Hangus</p>
+                              <p className="font-serif justify-start text-sm font-bold text-rk-red">Rp {proj.latteFactor.yearlyCost.toLocaleString('id-ID')}</p>
+                           </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {profile.savedRoasts && profile.savedRoasts.length > 0 && (
+                    <div className="space-y-4">
+                      <h3 className="text-xs font-bold text-rk-brown/40 uppercase tracking-widest pl-1">Aura Roast</h3>
+                      {profile.savedRoasts.map((roast) => (
+                        <div key={roast.id} className="bg-white rounded-xl p-4 shadow-sm border border-rk-brown/5 relative group">
+                           <button onClick={() => handleDeleteRoast(roast.id)} className="cursor-pointer absolute top-3 right-3 text-rk-brown/30 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <Trash2 className="w-4 h-4" />
+                           </button>
+                           <p className="text-[10px] text-rk-brown/50 mb-2">{new Date(roast.generatedAt).toLocaleString('id-ID', {day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'})}</p>
+                           <h4 className="text-lg font-black italic text-rk-brown mb-1">"{roast.aura}"</h4>
+                           <p className="text-xs font-semibold text-rk-brown/80 mb-2">🏆 {roast.characterTitle}</p>
+                           <p className="text-sm text-rk-brown italic line-clamp-3">"{roast.roast}"</p>
                         </div>
                       ))}
                     </div>

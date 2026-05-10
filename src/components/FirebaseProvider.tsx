@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { onAuthStateChanged, User, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth, googleProvider, checkConnection } from '../utils/firebase';
-import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, doc } from 'firebase/firestore';
 import { db, handleFirestoreError } from '../utils/firebase';
 import { Expense, UserProfile, SavingsChallenge, SplitBill } from '../utils/storage';
 import { getUserProfile, isGuestMode } from '../utils/firebaseUtils';
@@ -26,7 +26,7 @@ interface FirebaseContextType {
 const FirebaseContext = createContext<FirebaseContextType>({} as FirebaseContextType);
 
 // Helper enum for errors
-enum OperationType { LIST = 'list' }
+enum OperationType { LIST = 'list', GET = 'get' }
 
 export function FirebaseProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -122,10 +122,20 @@ export function FirebaseProvider({ children }: { children: React.ReactNode }) {
       handleFirestoreError(err, OperationType.LIST, pathChal);
     });
 
+    const pathProfile = `users/${user.uid}`;
+    const unsubProfile = onSnapshot(doc(db, 'users', user.uid), (docSnap) => {
+      if (docSnap.exists()) {
+        setProfile(docSnap.data() as UserProfile);
+      }
+    }, (err) => {
+      handleFirestoreError(err, OperationType.GET, pathProfile);
+    });
+
     return () => {
       unsubExp();
       unsubBills();
       unsubChal();
+      unsubProfile();
     };
   }, [user, isGuest]);
 

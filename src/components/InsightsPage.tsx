@@ -60,9 +60,9 @@ export default function InsightsPage({ expenses, profile, onBadgesUpdate, onShow
           />
         </div>
       ) : activeTab === 'proyeksi' ? (
-        <ProjectionCard expenses={expenses} onShowToast={onShowToast} />
+        <ProjectionCard expenses={expenses} profile={profile} onShowToast={onShowToast} />
       ) : activeTab === 'roast' ? (
-        <RoastCard expenses={expenses} onShowToast={onShowToast} />
+        <RoastCard expenses={expenses} profile={profile} onShowToast={onShowToast} />
       ) : null}
       <SavedItemsSidebar 
         isOpen={isSidebarOpen} 
