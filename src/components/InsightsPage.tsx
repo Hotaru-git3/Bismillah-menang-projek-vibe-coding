@@ -31,7 +31,7 @@ export default function InsightsPage({ expenses, profile, onBadgesUpdate, onShow
         </div>
         <button onClick={() => setIsSidebarOpen(true)} className="cursor-pointer p-2.5 bg-rk-brown/5 hover:bg-rk-brown/10 text-rk-brown rounded-full transition-colors relative" title="Arsip AI">
            <Bookmark className="w-5 h-5" />
-           {((profile.savedSummaries?.length || 0) + (profile.savedRecurring?.length || 0)) > 0 && (
+           {((profile.savedSummaries?.length || 0) + (profile.savedRecurring?.length || 0) + (profile.savedProjections?.length || 0) + (profile.savedRoasts?.length || 0)) > 0 && (
               <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-blue-500 rounded-full ring-2 ring-white"></span>
            )}
         </button>

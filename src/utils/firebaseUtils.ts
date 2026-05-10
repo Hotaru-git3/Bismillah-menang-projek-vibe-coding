@@ -47,6 +47,10 @@ export async function syncUserProfile(profile: UserProfile): Promise<void> {
         latestRecurring: profile.latestRecurring || null,
         savedSummaries: profile.savedSummaries || null,
         savedRecurring: profile.savedRecurring || null,
+        latestRoast: profile.latestRoast || null,
+        latestProjection: profile.latestProjection || null,
+        savedProjections: profile.savedProjections || null,
+        savedRoasts: profile.savedRoasts || null,
         updatedAt: serverTimestamp(),
       });
     } else {
@@ -59,6 +63,10 @@ export async function syncUserProfile(profile: UserProfile): Promise<void> {
         latestRecurring: profile.latestRecurring || null,
         savedSummaries: profile.savedSummaries || null,
         savedRecurring: profile.savedRecurring || null,
+        latestRoast: profile.latestRoast || null,
+        latestProjection: profile.latestProjection || null,
+        savedProjections: profile.savedProjections || null,
+        savedRoasts: profile.savedRoasts || null,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       });

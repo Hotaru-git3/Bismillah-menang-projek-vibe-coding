@@ -29,10 +29,13 @@ export default function RecurringCard({ expenses, profile, onShowToast }: Props)
     setLoading(true);
     try {
       const res = await detectRecurringExpense(expenses);
-      setRecurring(res);
+      const generatedAt = new Date().toISOString();
+      const updatedRecurring = { ...res, generatedAt };
+      
+      setRecurring(updatedRecurring);
       setRetryCount(0);
       
-      const newProfile = { ...profile, latestRecurring: { ...res, generatedAt: new Date().toISOString() } };
+      const newProfile = { ...profile, latestRecurring: updatedRecurring };
       await syncUserProfile(newProfile);
     } catch(err: any) {
       console.error(err);
@@ -82,9 +85,9 @@ export default function RecurringCard({ expenses, profile, onShowToast }: Props)
                  title="Simpan Pola"
                >
                  {profile.savedRecurring?.some(s => s.generatedAt === recurring.generatedAt) ? (
-                    <Bookmark className="w-4 h-4 fill-rk-brown text-rk-brown" />
+                    <Bookmark className="w-4 h-4 fill-black text-black" />
                  ) : (
-                    <Bookmark className="w-4 h-4" />
+                    <Bookmark className="w-4 h-4 text-black hover:fill-black text-opacity-40 hover:text-opacity-100" />
                  )}
                </button>
                <button onClick={loadRecurring} disabled={loading} className="cursor-pointer text-rk-brown/40 hover:text-rk-brown transition-colors disabled:opacity-50" title="Refresh">

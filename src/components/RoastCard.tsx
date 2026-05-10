@@ -27,10 +27,13 @@ export default function RoastCard({ expenses, profile, onShowToast }: Props) {
     setLoading(true);
     try {
         const res = await generateAuraRoast(expenses);
-        setRoastData({ ...res, generatedAt: new Date().toISOString() });
+        const generatedAt = new Date().toISOString();
+        const updatedRoast = { ...res, generatedAt };
+        
+        setRoastData(updatedRoast);
         setRetryCount(0);
         
-        const newProfile = { ...profile, latestRoast: { ...res, generatedAt: new Date().toISOString() } };
+        const newProfile = { ...profile, latestRoast: updatedRoast };
         await syncUserProfile(newProfile);
     } catch (e: any) {
         console.error(e);

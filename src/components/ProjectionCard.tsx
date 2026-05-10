@@ -27,10 +27,13 @@ export default function ProjectionCard({ expenses, profile, onShowToast }: Props
     setLoading(true);
     try {
       const res = await generateProyeksi(expenses);
-      setProyeksi({ ...res, generatedAt: new Date().toISOString() });
+      const generatedAt = new Date().toISOString();
+      const updatedProyeksi = { ...res, generatedAt };
+      
+      setProyeksi(updatedProyeksi);
       setRetryCount(0);
       
-      const newProfile = { ...profile, latestProjection: { ...res, generatedAt: new Date().toISOString() } };
+      const newProfile = { ...profile, latestProjection: updatedProyeksi };
       await syncUserProfile(newProfile);
     } catch (e: any) {
       console.error(e);
@@ -149,7 +152,7 @@ export default function ProjectionCard({ expenses, profile, onShowToast }: Props
            title="Simpan Proyeksi"
          >
            {profile.savedProjections?.some(s => s.generatedAt === proyeksi.generatedAt) ? (
-              <><Bookmark className="w-3.5 h-3.5 fill-rk-brown text-rk-brown" /> Tersimpan</>
+              <><Bookmark className="w-3.5 h-3.5 fill-black text-black" /> <span className="text-black">Tersimpan</span></>
            ) : (
               <><Bookmark className="w-3.5 h-3.5" /> Simpan ke Arsip</>
            )}

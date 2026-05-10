@@ -34,10 +34,13 @@ export default function WeeklySummaryCard({ expenses, profile, onShowToast }: Pr
     setLoading(true);
     try {
       const res = await generateWeeklySummary(recentExpenses.length > 0 ? recentExpenses : expenses.slice(0, 5));
-      setSummary(res);
+      const generatedAt = new Date().toISOString();
+      const updatedSummary = { ...res, generatedAt };
+      
+      setSummary(updatedSummary);
       setRetryCount(0);
       
-      const newProfile = { ...profile, latestSummary: { ...res, generatedAt: new Date().toISOString() } };
+      const newProfile = { ...profile, latestSummary: updatedSummary };
       await syncUserProfile(newProfile);
     } catch(err: any) {
       console.error(err);
@@ -88,15 +91,14 @@ export default function WeeklySummaryCard({ expenses, profile, onShowToast }: Pr
                    }
                    const newProfile = { ...profile, savedSummaries: newSaved };
                    await syncUserProfile(newProfile);
-                   await refreshProfile();
                 }}
                 className="cursor-pointer text-rk-brown/40 hover:text-rk-brown transition-colors"
                 title="Simpan Ringkasan"
               >
                 {profile.savedSummaries?.some(s => s.generatedAt === summary.generatedAt) ? (
-                   <Bookmark className="w-4 h-4 fill-rk-brown text-rk-brown" />
+                   <Bookmark className="w-4 h-4 fill-black text-black" />
                 ) : (
-                   <Bookmark className="w-4 h-4" />
+                   <Bookmark className="w-4 h-4 text-black hover:fill-black text-opacity-40 hover:text-opacity-100" />
                 )}
               </button>
               <button onClick={loadSummary} disabled={loading} className="cursor-pointer text-rk-brown/40 hover:text-rk-brown transition-colors disabled:opacity-50" title="Refresh Summary">

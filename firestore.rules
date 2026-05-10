@@ -24,8 +24,12 @@ service cloud.firestore {
              && (!('badges' in data) || (data.badges is list && data.badges.size() <= 50))
              && (!('latestSummary' in data) || data.latestSummary == null || data.latestSummary is map)
              && (!('latestRecurring' in data) || data.latestRecurring == null || data.latestRecurring is map)
+             && (!('latestRoast' in data) || data.latestRoast == null || data.latestRoast is map)
+             && (!('latestProjection' in data) || data.latestProjection == null || data.latestProjection is map)
              && (!('savedSummaries' in data) || data.savedSummaries == null || (data.savedSummaries is list && data.savedSummaries.size() <= 20))
-             && (!('savedRecurring' in data) || data.savedRecurring == null || (data.savedRecurring is list && data.savedRecurring.size() <= 20));
+             && (!('savedRecurring' in data) || data.savedRecurring == null || (data.savedRecurring is list && data.savedRecurring.size() <= 20))
+             && (!('savedProjections' in data) || data.savedProjections == null || (data.savedProjections is list && data.savedProjections.size() <= 20))
+             && (!('savedRoasts' in data) || data.savedRoasts == null || (data.savedRoasts is list && data.savedRoasts.size() <= 20));
     }
 
     match /users/{userId} {
@@ -38,11 +42,11 @@ service cloud.firestore {
                     && incoming().createdAt == request.time
                     && incoming().updatedAt == request.time
                     && incoming().keys().size() >= 5
-                    && incoming().keys().size() <= 10;
+                    && incoming().keys().size() <= 14;
 
       allow update: if isOwner(userId)
                     && isValidUser(incoming())
-                    && incoming().diff(existing()).affectedKeys().hasOnly(['name', 'monthlyBudget', 'badges', 'latestSummary', 'latestRecurring', 'savedSummaries', 'savedRecurring', 'updatedAt'])
+                    && incoming().diff(existing()).affectedKeys().hasOnly(['name', 'monthlyBudget', 'badges', 'latestSummary', 'latestRecurring', 'latestRoast', 'latestProjection', 'savedSummaries', 'savedRecurring', 'savedProjections', 'savedRoasts', 'updatedAt'])
                     && incoming().updatedAt == request.time
                     && incoming().createdAt == existing().createdAt
                     && (!('name' in incoming().diff(existing()).affectedKeys()) || (incoming().name is string && incoming().name.size() <= 100))
@@ -50,8 +54,12 @@ service cloud.firestore {
                     && (!('badges' in incoming().diff(existing()).affectedKeys()) || (incoming().badges is list && incoming().badges.size() <= 50))
                     && (!('latestSummary' in incoming().diff(existing()).affectedKeys()) || incoming().latestSummary == null || incoming().latestSummary is map)
                     && (!('latestRecurring' in incoming().diff(existing()).affectedKeys()) || incoming().latestRecurring == null || incoming().latestRecurring is map)
+                    && (!('latestRoast' in incoming().diff(existing()).affectedKeys()) || incoming().latestRoast == null || incoming().latestRoast is map)
+                    && (!('latestProjection' in incoming().diff(existing()).affectedKeys()) || incoming().latestProjection == null || incoming().latestProjection is map)
                     && (!('savedSummaries' in incoming().diff(existing()).affectedKeys()) || incoming().savedSummaries == null || (incoming().savedSummaries is list && incoming().savedSummaries.size() <= 20))
-                    && (!('savedRecurring' in incoming().diff(existing()).affectedKeys()) || incoming().savedRecurring == null || (incoming().savedRecurring is list && incoming().savedRecurring.size() <= 20));
+                    && (!('savedRecurring' in incoming().diff(existing()).affectedKeys()) || incoming().savedRecurring == null || (incoming().savedRecurring is list && incoming().savedRecurring.size() <= 20))
+                    && (!('savedProjections' in incoming().diff(existing()).affectedKeys()) || incoming().savedProjections == null || (incoming().savedProjections is list && incoming().savedProjections.size() <= 20))
+                    && (!('savedRoasts' in incoming().diff(existing()).affectedKeys()) || incoming().savedRoasts == null || (incoming().savedRoasts is list && incoming().savedRoasts.size() <= 20));
     }
 
     function isValidExpense(data, userId) {
