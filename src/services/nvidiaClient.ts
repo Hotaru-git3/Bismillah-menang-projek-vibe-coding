@@ -16,8 +16,8 @@ export class NvidiaClient {
 
   constructor() {
     this.config = {
-      primaryModel: process.env.NVIDIA_PRIMARY_MODEL || 'meta/llama-4-maverick-17b-128e-instruct',
-      fallbackModel: process.env.NVIDIA_FALLBACK_MODEL || 'mistralai/mistral-large-3-675b-instruct-2512',
+      primaryModel: process.env.NVIDIA_PRIMARY_MODEL || 'meta/llama-3.3-70b-instruct',
+      fallbackModel: process.env.NVIDIA_FALLBACK_MODEL || 'meta/llama-3.1-8b-instruct',
       apiKey: process.env.NVIDIA_API_KEY || '',
       baseURL: 'https://integrate.api.nvidia.com/v1/chat/completions',
       timeout: 25000 // 25 seconds, to accommodate serverless environments like Vercel
